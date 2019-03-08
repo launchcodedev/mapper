@@ -19,8 +19,10 @@
   },
   "devDependencies": {
     "@types/jest": "23",
+    "@types/moment": "2",
     "@types/node": "8",
     "jest": "23",
+    "moment": "2",
     "ts-jest": "23",
     "tslint": "5",
     "tslint-config-airbnb": "5",
