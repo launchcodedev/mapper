@@ -4,6 +4,7 @@ import {
   toDataType,
   mapper,
 } from './index';
+import * as moment from 'moment';
 
 test('to data type', () => {
   const mappings: [any, DataType][] = [
@@ -135,4 +136,29 @@ test('custom mapper', () => {
   for (const [input, output] of objs) {
     expect(mapper(input, mapping)).toEqual(output);
   }
+});
+
+test('moment mapper', () => {
+  const mapping: Mapping = {
+    custom: [
+      [
+        (data, dataType) => {
+          if (dataType === DataType.String) {
+            // for whatever reason, there is no way to strict-parse without providing a format
+            (moment as any).suppressDeprecationWarnings = true;
+
+            return moment(data).isValid();
+          }
+
+          return dataType === DataType.Date || moment.isMoment(data);
+        },
+        data => moment(data),
+      ],
+    ],
+  };
+
+  expect(moment('1995-12-17T03:24:00').isSame(mapper(new Date('1995-12-17T03:24:00'), mapping)));
+  expect(moment('1995-12-17T03:24:00').isSame(mapper(moment('1995-12-17T03:24:00'), mapping)));
+  expect(moment('1995-12-17T03:24:00').isSame(mapper('1995-12-17T03:24:00', mapping)));
+  expect(mapper('plain string', mapping)).toBe('plain string');
 });
