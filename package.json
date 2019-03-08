@@ -1,0 +1,43 @@
+{
+  "name": "@servall/mapper",
+  "description": "Simple object mapping with visitor support",
+  "version": "0.1.0-dev",
+  "license": "UNLICENSED",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "author": {
+    "name": "Servall Development",
+    "email": "admin@servalldev.com",
+    "url": "https://www.servalldev.com"
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc",
+    "test": "jest",
+    "lint": "tslint src/**/*.ts src/*.ts",
+    "fix": "yarn lint --fix",
+    "prepublishOnly": "yarn build"
+  },
+  "devDependencies": {
+    "@types/jest": "23",
+    "@types/node": "8",
+    "jest": "23",
+    "ts-jest": "23",
+    "tslint": "5",
+    "tslint-config-airbnb": "5",
+    "tslint-eslint-rules": "5",
+    "typescript": "3"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testMatch": null,
+    "testRegex": "(tests/.*|src/.*\\.test)\\.(ts|js)$",
+    "testPathIgnorePatterns": [
+      "node_modules",
+      ".yarn-cache"
+    ],
+    "modulePathIgnorePatterns": [
+      "node_modules",
+      ".yarn-cache"
+    ]
+  }
+}
