@@ -29,6 +29,10 @@ expect(mapper('plain string', mapping)).toBe('plain string');
 This package will iterate through arrays, objects, etc. So doing an operation to all nested
 properties of an object is easy.
 
+Be warned: Object detection is `typeof val === 'object'`. Any Object match (Dates excluded)
+will iterate through the key/value pairs found (e.g. an XMLHttpRequest object) and
+modify the properties if it matches. This may produce undesirable results.
+
 ```typescript
 const mapping: Mapping = {
   [DataType.Number]: num => num * 2,
