@@ -99,6 +99,20 @@ test('string mapper', () => {
   }
 });
 
+test('array mapping', () => {
+  const objs: [any, any][] = [
+    [[0, 1, 2, 3], [0, 2, 4, 6]],
+  ];
+
+  const mapping: Mapping = {
+    [DataType.Number]: num => num * 2,
+  };
+
+  for (const [input, output] of objs) {
+    expect(mapper(input, mapping)).toEqual(output);
+  }
+});
+
 test('date mapper', () => {
   const objs: [any, any][] = [
     [{}, {}],
