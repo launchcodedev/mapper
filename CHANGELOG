@@ -1,3 +1,7 @@
+# 0.1.1
+
+- mapping objects now provides key being mapped for added context/capability
+
 # 0.1.0
 
 - Initial version
