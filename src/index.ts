@@ -11,23 +11,25 @@ export enum DataType {
   Unknown,
 }
 
+type MappingFunc<T> = (val: T, key?: string) => any;
+
 export type Mapping = {
-  [DataType.String]?: (str: string) => any;
-  [DataType.Number]?: (num: number) => any;
-  [DataType.Boolean]?: (bool: boolean) => any;
-  [DataType.Function]?: (func: Function) => any;
-  [DataType.Null]?: (val: null) => any;
-  [DataType.Undefined]?: (val: undefined) => any;
-  [DataType.Date]?: (date: Date) => any;
-  [DataType.Array]?: (arr: any[]) => any;
-  [DataType.Object]?: (obj: object) => any;
-  [DataType.Unknown]?: (val: any) => any;
+  [DataType.String]?: MappingFunc<string>;
+  [DataType.Number]?: MappingFunc<number>;
+  [DataType.Boolean]?: MappingFunc<boolean>;
+  [DataType.Function]?: MappingFunc<Function>;
+  [DataType.Null]?: MappingFunc<null>;
+  [DataType.Undefined]?: MappingFunc<undefined>;
+  [DataType.Date]?: MappingFunc<Date>;
+  [DataType.Array]?: MappingFunc<any[]>;
+  [DataType.Object]?: MappingFunc<object>;
+  [DataType.Unknown]?: MappingFunc<any>;
 
   custom?: [
     // use this mapping?
-    (data: any, dataType: DataType) => boolean,
+    (data: any, dataType: DataType, key?: string) => boolean,
     // do the mapping
-    (data: any, dataType: DataType) => any,
+    (data: any, dataType: DataType, key?: string) => any,
   ][];
 };
 
@@ -71,21 +73,21 @@ export const toDataType = (data?: any): DataType => {
   return DataType.Unknown;
 };
 
-export const mapper = <D>(data: D, mapping: Mapping = {}): any => {
+export const mapper = <D>(data: D, mapping: Mapping = {}, key?: string): any => {
   const dataType = toDataType(data);
 
   if (mapping.custom) {
-    const func = mapping.custom.find(([useThisMapping]) => useThisMapping(data, dataType));
+    const func = mapping.custom.find(([useThisMapping]) => useThisMapping(data, dataType, key));
 
     if (func) {
-      return func[1](data, dataType);
+      return func[1](data, dataType, key);
     }
   }
 
   const mappingFunc = mapping[dataType];
 
   if (mappingFunc) {
-    return mappingFunc(data as never);
+    return mappingFunc(data as never, key);
   }
 
   switch (dataType) {
@@ -96,7 +98,7 @@ export const mapper = <D>(data: D, mapping: Mapping = {}): any => {
     case DataType.Object:
       const output: any = {};
       for (const [key, value] of Object.entries(data)) {
-        output[key] = mapper(value, mapping);
+        output[key] = mapper(value, mapping, key);
       }
 
       return output as D;

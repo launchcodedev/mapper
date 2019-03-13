@@ -176,3 +176,19 @@ test('moment mapper', () => {
   expect(moment('1995-12-17T03:24:00').isSame(mapper('1995-12-17T03:24:00', mapping)));
   expect(mapper('plain string', mapping)).toBe('plain string');
 });
+
+test('mapping key', () => {
+  const mapping: Mapping = {
+    [DataType.String]: (str, key) => key ? `${key}: ${str}` : str,
+    custom: [
+      [
+        (_, __, key) => key === '$key',
+        data => `KEY:${data}`,
+      ],
+    ],
+  };
+
+  expect(mapper('raw', mapping)).toEqual('raw');
+  expect(mapper({ str: 'raw' }, mapping)).toEqual({ str: 'str: raw' });
+  expect(mapper({ $key: 'foo' }, mapping)).toEqual({ $key: 'KEY:foo' });
+});
