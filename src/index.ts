@@ -114,3 +114,101 @@ export const mapper = <D>(data: D, mapping: Mapping = {}, key?: string): any => 
       return data;
   }
 };
+
+const buildNestedPropertyAccessors = (
+  obj: any,
+  exclude: string[] = [],
+  ctx: string[] = [],
+): string[][] => {
+  const props: string[][] = [];
+
+  if (toDataType(obj) !== DataType.Object) {
+    return [];
+  }
+
+  for (const [key, nested] of Object.entries(obj)) {
+    const nested = buildNestedPropertyAccessors(obj[key], exclude, ctx.concat(key));
+
+    if (nested.length) {
+      props.push(...nested);
+    } else {
+      props.push(ctx.concat(key));
+    }
+  }
+
+  return props;
+};
+
+const getProperty = (obj: any, accessor: string[]) => accessor.reduce((obj, property) => {
+  if (obj[property] !== undefined) {
+    return obj[property];
+  }
+  throw new Error(`cannot getProperty ${accessor.join('.')}`);
+}, obj);
+
+const setProperty = (obj: any, accessor: string[], value: any) => {
+  if (accessor.length === 1) {
+    obj[accessor[0]] = value;
+  } else if (accessor.length > 1) {
+    setProperty(obj[accessor[0]], accessor.slice(1), value);
+  }
+};
+
+export type StructuredMappingFunc<I, O = I> = (val: I, dataType: DataType) => O;
+
+export type StructuredMappingOptions<I, O = I> = StructuredMappingFunc<I, O> | {
+  map: StructuredMappingFunc<I, O>;
+  optional?: boolean;
+};
+
+export type StructuredMapping<I = any, O = I> = StructuredMappingOptions<I, O> | {
+  [key: string]: StructuredMapping<any>;
+};
+
+export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D, O>): O => {
+  if (typeof mapping === 'function') {
+    return structuredMapper(data, { map: mapping });
+  }
+
+  if (mapping.map) {
+    if (data === undefined && !mapping.optional) {
+      throw new Error('Cannot do a structured map on undefined');
+    }
+
+    return (mapping.map as StructuredMappingFunc<D, O>)(data, toDataType(data));
+  }
+
+  if (data === undefined) {
+    throw new Error('Cannot do a structured map on undefined');
+  } else if (typeof data !== 'object') {
+    throw new Error(`Cannot do a structured map on a non-object (${data})`);
+  }
+
+  // get mappings without the trailing .map or .optional
+  const exclude = ['map', 'optional'];
+  const mappings = buildNestedPropertyAccessors(mapping).map((prop) => {
+    if (exclude.includes(prop[prop.length - 1])) {
+      return prop.slice(0, -1);
+    }
+
+    return prop;
+  });
+
+  mappings.map(prop => [prop, getProperty(mapping, prop)]).forEach(([prop, mapping]) => {
+    let input;
+
+    try {
+      input = getProperty(data, prop);
+    } catch (err) {
+      if (!mapping.optional) {
+        throw err;
+      } else {
+        return;
+      }
+    }
+
+    setProperty(data, prop, structuredMapper(input, mapping));
+  });
+
+  return data as unknown as O;
+};

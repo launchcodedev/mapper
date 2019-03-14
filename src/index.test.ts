@@ -1,8 +1,10 @@
 import {
   DataType,
   Mapping,
+  StructuredMapping,
   toDataType,
   mapper,
+  structuredMapper,
 } from './index';
 import * as moment from 'moment';
 
@@ -191,4 +193,51 @@ test('mapping key', () => {
   expect(mapper('raw', mapping)).toEqual('raw');
   expect(mapper({ str: 'raw' }, mapping)).toEqual({ str: 'str: raw' });
   expect(mapper({ $key: 'foo' }, mapping)).toEqual({ $key: 'KEY:foo' });
+});
+
+test('structure mapping', () => {
+  const mapping: StructuredMapping = {
+    foo: {
+      bar(value, dataType) {
+        return 'replaced';
+      },
+    },
+  };
+
+  expect(structuredMapper({ foo: { bar: 12 } }, mapping))
+    .toEqual({ foo: { bar: 'replaced' } });
+
+  expect(structuredMapper({ foo: { bar: 'baz' } }, mapping))
+    .toEqual({ foo: { bar: 'replaced' } });
+});
+
+test('structure mapping optional', () => {
+  const mapping: StructuredMapping = {
+    foo: {
+      bar: {
+        optional: true,
+        map(value, dataType) {
+          return 'replaced';
+        },
+      },
+    },
+  };
+
+  expect(structuredMapper({ foo: { bar: 12 } }, mapping))
+    .toEqual({ foo: { bar: 'replaced' } });
+
+  expect(structuredMapper({ foo: {} }, mapping))
+    .toEqual({ foo: {} });
+
+  expect(structuredMapper({}, mapping))
+    .toEqual({});
+
+  expect(structuredMapper([], mapping))
+    .toEqual([]);
+
+  expect(structuredMapper({ foo: { bar: [] } }, mapping))
+    .toEqual({ foo: { bar: 'replaced' } });
+
+  expect(structuredMapper({ foo: [] }, mapping))
+    .toEqual({ foo: [] });
 });
