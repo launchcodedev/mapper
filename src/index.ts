@@ -146,11 +146,15 @@ const getProperty = (obj: any, accessor: string[]) => accessor.reduce((obj, prop
   throw new Error(`cannot getProperty ${accessor.join('.')}`);
 }, obj);
 
-const setProperty = (obj: any, accessor: string[], value: any) => {
+const setProperty = (obj: any, accessor: string[], value: any, createObjs = false) => {
   if (accessor.length === 1) {
     obj[accessor[0]] = value;
   } else if (accessor.length > 1) {
-    setProperty(obj[accessor[0]], accessor.slice(1), value);
+    if (createObjs && obj[accessor[0]] === undefined) {
+      obj[accessor[0]] = {};
+    }
+
+    setProperty(obj[accessor[0]], accessor.slice(1), value, createObjs);
   }
 };
 
@@ -159,6 +163,7 @@ export type StructuredMappingFunc<I, O = I> = (val: I, dataType: DataType) => O;
 export type StructuredMappingOptions<I, O = I> = StructuredMappingFunc<I, O> | {
   map: StructuredMappingFunc<I, O>;
   optional?: boolean;
+  array?: boolean;
 };
 
 export type StructuredMapping<I = any, O = I> = StructuredMappingOptions<I, O> | {
@@ -175,6 +180,15 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
       throw new Error('Cannot do a structured map on undefined');
     }
 
+    if (mapping.array) {
+      if (toDataType(data) !== DataType.Array) {
+        throw new Error('received an array mapping, but input data was not');
+      }
+
+      return (data as unknown as any[])
+        .map(v => (mapping.map as StructuredMappingFunc<D, O>)(v, toDataType(v))) as unknown as O;
+    }
+
     return (mapping.map as StructuredMappingFunc<D, O>)(data, toDataType(data));
   }
 
@@ -185,7 +199,7 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
   }
 
   // get mappings without the trailing .map or .optional
-  const exclude = ['map', 'optional'];
+  const exclude = ['map', 'optional', 'array'];
   const mappings = buildNestedPropertyAccessors(mapping).map((prop) => {
     if (exclude.includes(prop[prop.length - 1])) {
       return prop.slice(0, -1);
@@ -193,6 +207,8 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
 
     return prop;
   });
+
+  const output = {};
 
   mappings.map(prop => [prop, getProperty(mapping, prop)]).forEach(([prop, mapping]) => {
     let input;
@@ -207,8 +223,8 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
       }
     }
 
-    setProperty(data, prop, structuredMapper(input, mapping));
+    setProperty(output, prop, structuredMapper(input, mapping), true);
   });
 
-  return data as unknown as O;
+  return output as O;
 };
