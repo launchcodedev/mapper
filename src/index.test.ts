@@ -281,7 +281,7 @@ test('complex structure mapping', () => {
             if (dataType === DataType.String) return 'str';
 
             return value;
-          }
+          },
         },
       },
     },
