@@ -264,3 +264,91 @@ test('structure mapping array', () => {
   expect(structuredMapper({ foo: { bar: [1, '2', 3] } }, mapping))
     .toEqual({ foo: { bar: [2, 'unknown', 6] } });
 });
+
+test('complex structure mapping', () => {
+  const mapping: StructuredMapping = {
+    top: value => value + 10,
+    foo: {
+      nest: {
+        optional: true,
+        map: value => value * 10,
+      },
+      more: {
+        more: {
+          array: true,
+          optional: true,
+          map(value, dataType) {
+            if (dataType === DataType.String) return 'str';
+
+            return value;
+          }
+        },
+      },
+    },
+
+    array: {
+      array: true,
+      map: val => val ** 10,
+    },
+  };
+
+  expect(() => structuredMapper({ top: 1 }, mapping)).toThrow();
+  expect(() => structuredMapper({ array: [] }, mapping)).toThrow();
+
+  expect(structuredMapper({
+    top: 1,
+    array: [5, 10],
+  }, mapping)).toEqual({
+    top: 11,
+    array: [5 ** 10, 10 ** 10],
+  });
+
+  expect(structuredMapper({
+    top: 1,
+    array: [5, 10],
+    foo: { nest: 1 },
+  }, mapping)).toEqual({
+    top: 11,
+    array: [5 ** 10, 10 ** 10],
+    foo: { nest: 10 },
+  });
+
+  expect(structuredMapper({
+    top: 1,
+    array: [5, 10],
+    foo: {
+      more: {},
+    },
+  }, mapping)).toEqual({
+    top: 11,
+    array: [5 ** 10, 10 ** 10],
+  });
+
+  expect(structuredMapper({
+    top: 1,
+    array: [5, 10],
+    foo: {
+      more: {
+        more: [],
+      },
+    },
+  }, mapping)).toEqual({
+    top: 11,
+    array: [5 ** 10, 10 ** 10],
+    foo: { more: { more: [] } },
+  });
+
+  expect(structuredMapper({
+    top: 1,
+    array: [5, 10],
+    foo: {
+      more: {
+        more: [1, 'dfkj', []],
+      },
+    },
+  }, mapping)).toEqual({
+    top: 11,
+    array: [5 ** 10, 10 ** 10],
+    foo: { more: { more: [1, 'str', []] } },
+  });
+});
