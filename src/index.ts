@@ -97,8 +97,6 @@ export const mapper = <D>(data: D, mapping: Mapping = {}, key?: string): any => 
     if (result !== data || toDataType(result) !== DataType.Object) {
       return result;
     }
-
-    data = result; // tslint:disable-line
   }
 
   switch (dataType) {
