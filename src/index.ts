@@ -87,7 +87,18 @@ export const mapper = <D>(data: D, mapping: Mapping = {}, key?: string): any => 
   const mappingFunc = mapping[dataType];
 
   if (mappingFunc) {
-    return mappingFunc(data as never, key);
+    const result = mappingFunc(data as never, key);
+
+    // in short, a transform of:
+    //
+    // (obj, key) => { key === 'something' ? 12 : obj }
+    //
+    // when obj is an Object, we should recurse into it
+    if (result !== data || toDataType(result) !== DataType.Object) {
+      return result;
+    }
+
+    data = result;
   }
 
   switch (dataType) {

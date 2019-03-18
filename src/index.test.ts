@@ -352,3 +352,19 @@ test('complex structure mapping', () => {
     foo: { more: { more: [1, 'str', []] } },
   });
 });
+
+test('mapping object', () => {
+  const mapping: Mapping = {
+    [DataType.Object]: (obj, key) => {
+      if (key === 'foo') return 'baz';
+      return obj;
+    },
+    [DataType.String]: (obj) => 'replaced',
+  };
+
+  expect(mapper({ baz: '', foo: {}, bar: { foo: {} } }, mapping)).toEqual({
+    baz: 'replaced',
+    foo: 'baz',
+    bar: { foo: 'baz' },
+  });
+});
