@@ -98,7 +98,7 @@ export const mapper = <D>(data: D, mapping: Mapping = {}, key?: string): any => 
       return result;
     }
 
-    data = result;
+    data = result; // tslint:disable-line
   }
 
   switch (dataType) {

@@ -359,7 +359,7 @@ test('mapping object', () => {
       if (key === 'foo') return 'baz';
       return obj;
     },
-    [DataType.String]: (obj) => 'replaced',
+    [DataType.String]: obj => 'replaced',
   };
 
   expect(mapper({ baz: '', foo: {}, bar: { foo: {} } }, mapping)).toEqual({
