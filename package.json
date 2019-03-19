@@ -21,6 +21,7 @@
     "@types/jest": "23",
     "@types/moment": "2",
     "@types/node": "8",
+    "benchmark": "2",
     "jest": "23",
     "moment": "2",
     "ts-jest": "23",
