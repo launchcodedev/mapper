@@ -109,7 +109,7 @@ return { values, to, return };
 This is clearly not great. Lots of duplication and possibility for errors. It doesn't work
 for nesting objects well, and with multiple branches in an action, requires duplication.
 
-You might opt to use our `returning` field instead.
+You might opt to use `extract` to take what you want:
 
 ```typescript
 import { extract } from '@servall/mapper';
