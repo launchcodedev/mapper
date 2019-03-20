@@ -293,4 +293,3 @@ export const extract = (body: any, extraction: Extraction) => {
 
   return output;
 };
-

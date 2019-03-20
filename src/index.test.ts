@@ -384,10 +384,10 @@ test('extract basics', () => {
 });
 
 test('extract array', () => {
-  expect(extract({ foo: [{a:1,b:1},{b:2},{a:3}] }, { foo: [{ b: true }] })).toEqual({
+  expect(extract({ foo: [{ a:1, b:1 }, { b:2 }, { a:3 }] }, { foo: [{ b: true }] })).toEqual({
     foo: [
-      {b:1},
-      {b:2},
+      { b:1 },
+      { b:2 },
       {},
     ],
   });
