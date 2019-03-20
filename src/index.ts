@@ -237,3 +237,60 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
 
   return output as O;
 };
+
+export interface Extraction {
+  [key: string]: Extraction | [Extraction] | Extraction[] | string[] | boolean;
+}
+
+export const extract = (body: any, extraction: Extraction) => {
+  const output: any = {};
+
+  if (typeof body !== 'object') return body;
+
+  for (const [field, extractField] of Object.entries(extraction)) {
+    // either [{ bar: true }] or ['fieldA', 'fieldB']
+    if (Array.isArray(extractField)) {
+      // this is when mapping is [{ bar: true }]
+      // [{bar:1,baz:2},{bar:2,baz:3}] -> [{bar:1},{bar:2}]
+      const isFieldListing = !(extractField as any[]).some(v => (typeof v !== 'string'));
+
+      if (!isFieldListing) {
+        if (extractField.length !== 1) {
+          throw new Error('Bad [{}] syntax for extract');
+        }
+
+        if (!Array.isArray(body[field])) {
+          continue;
+        }
+
+        // [{ bar: true }]
+        const extractor = extractField[0] as Extraction;
+
+        // map over fields, recursing
+        output[field] = body[field].map((v: any) => extract(v, extractor));
+      } else {
+        if (typeof body[field] !== 'object') {
+          continue;
+        }
+
+        output[field] = {};
+
+        // this is when ['fieldA', 'fieldB']
+        for (const arrField of extractField) {
+          output[field][arrField as string] = body[field][arrField as string];
+        }
+      }
+    } else if (extractField === true) {
+      // { bar: true } means return anything in bar
+      output[field] = body[field];
+    } else if (extractField === false) {
+      continue;
+    } else {
+      // { foo: { bar: ... } } - recurse into foo
+      output[field] = extract(body[field], extractField);
+    }
+  }
+
+  return output;
+};
+
