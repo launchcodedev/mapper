@@ -238,14 +238,25 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
   return output as O;
 };
 
-export interface Extraction {
-  [key: string]: Extraction | [Extraction] | Extraction[] | string[] | boolean;
-}
+interface ExtractionArr extends Array<Extraction> {}
 
-export const extract = (body: any, extraction: Extraction) => {
+export type Extraction = ExtractionArr | string[] | boolean | {
+  [key: string]: Extraction,
+};
+
+export const extract = (body: any, extraction: Extraction): any => {
   const output: any = {};
 
   if (typeof body !== 'object') return body;
+
+  if (Array.isArray(body)) {
+    // edge case for [...] and [{ ...mapping }]
+    if (Array.isArray(extraction) && extraction.length === 1 && typeof extraction[0] === 'object') {
+      return body.map(v => extract(v, extraction[0] as any));
+    }
+
+    return body;
+  }
 
   for (const [field, extractField] of Object.entries(extraction)) {
     // either [{ bar: true }] or ['fieldA', 'fieldB']
