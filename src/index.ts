@@ -238,7 +238,7 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
   return output as O;
 };
 
-interface ExtractionArr extends Array<Extraction> {}
+export interface ExtractionArr extends Array<Extraction> {}
 
 export type Extraction = ExtractionArr | string[] | boolean | {
   [key: string]: Extraction,
