@@ -263,9 +263,9 @@ export const extract = (body: any, extraction: Extraction): any => {
     if (Array.isArray(extractField)) {
       // this is when mapping is [{ bar: true }]
       // [{bar:1,baz:2},{bar:2,baz:3}] -> [{bar:1},{bar:2}]
-      const isFieldListing = !(extractField as any[]).some(v => (typeof v !== 'string'));
+      const isObjectMapping = (extractField as any[]).some(v => (typeof v !== 'string'));
 
-      if (!isFieldListing) {
+      if (isObjectMapping) {
         if (extractField.length !== 1) {
           throw new Error('Bad [{}] syntax for extract');
         }
