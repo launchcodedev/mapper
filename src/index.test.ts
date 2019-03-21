@@ -4,6 +4,7 @@ import {
   StructuredMapping,
   toDataType,
   mapper,
+  extract,
   structuredMapper,
 } from './index';
 import * as moment from 'moment';
@@ -367,4 +368,63 @@ test('mapping object', () => {
     foo: 'baz',
     bar: { foo: 'baz' },
   });
+});
+
+test('extract basics', () => {
+  expect(extract({}, {})).toEqual({});
+  expect(extract({ foo: 1 }, {})).toEqual({});
+  expect(extract({}, { foo: [] })).toEqual({});
+  expect(extract({}, { foo: true })).toEqual({});
+  expect(extract({ foo: 1 }, { foo: true })).toEqual({ foo: 1 });
+  expect(extract({ foo: {} }, { foo: true })).toEqual({ foo: {} });
+  expect(extract({ foo: 1 }, { foo: [] })).toEqual({});
+  expect(extract({ foo: 1 }, { foo: ['bar'] })).toEqual({});
+  expect(extract({ foo: { bar: 1 } }, { foo: ['bar'] })).toEqual({ foo: { bar: 1 } });
+  expect(extract({ foo: { bar: 1, baz: 2 } }, { foo: ['bar'] })).toEqual({ foo: { bar: 1 } });
+});
+
+test('extract array', () => {
+  expect(extract({ foo: [{ a:1, b:1 }, { b:2 }, { a:3 }] }, { foo: [{ b: true }] })).toEqual({
+    foo: [
+      { b:1 },
+      { b:2 },
+      {},
+    ],
+  });
+});
+
+test('extract deep', () => {
+  const response = {
+    firstName: 'Bob',
+    lastName: 'Albert',
+    password: 'secure!',
+    permissions: [
+      { role: 'admin', timestamp: new Date(), authority: { access: 33 } },
+      { role: 'user', timestamp: new Date(), extra: false },
+    ],
+  };
+
+  const extraction = {
+    firstName: true,
+    lastName: true,
+    permissions: [{
+      role: true,
+      authority: ['access'],
+    }],
+  };
+
+  const expected = {
+    firstName: 'Bob',
+    lastName: 'Albert',
+    permissions: [
+      { role: 'admin', authority: { access: 33 } },
+      { role: 'user' },
+    ],
+  };
+
+  expect(extract(response, extraction)).toEqual(expected);
+});
+
+test('extract shallow array', () => {
+  expect(extract([{ a: 1, b: 2 }], [{ a: true }])).toEqual([{ a: 1 }]);
 });

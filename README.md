@@ -82,3 +82,89 @@ const users = structuredMapper(await fetch('/users'), {
   },
 });
 ```
+
+## Extraction
+Taking an example route action:
+
+```typescript
+{
+  path: '/users',
+  method: HttpMethod.GET,
+  async action(ctx, next) {
+    return myDatabase.select('* from user');
+  },
+},
+```
+
+You might prefer not to include the `password` field here (excuse the contrived example).
+
+To do so, the manual approach is:
+
+```typescript
+const { values, to, return } = { ... };
+
+return { values, to, return };
+```
+
+This is clearly not great. Lots of duplication and possibility for errors. It doesn't work
+for nesting objects well, and with multiple branches in an action, requires duplication.
+
+You might opt to use `extract` to take what you want:
+
+```typescript
+import { extract } from '@servall/mapper';
+
+const users = await myDatabase.select('* from user');
+
+return extract(users, {
+  firstName: true,
+  lastName: true,
+  permissions: [{
+    role: true,
+    authority: ['access'],
+  }],
+});
+```
+
+Some examples of this:
+
+```
+INPUT:
+{
+  firstName: 'Bob',
+  lastName: 'Albert',
+  password: 'secure!',
+  permissions: [
+    { role: 'admin', timestamp: new Date(), authority: { access: 33 } },
+    { role: 'user', timestamp: new Date(), extra: false },
+  ],
+}
+
+RETURNING:
+{
+  firstName: true,
+  lastName: true,
+  permissions: [{
+    role: true,
+    authority: ['access'],
+  }],
+}
+
+RESULT:
+{
+  firstName: 'Bob',
+  lastName: 'Albert',
+  permissions: [
+    { role: 'admin', authority: { access: 33 } },
+    { role: 'user' },
+  ],
+}
+```
+
+Note a couple things:
+
+- `['access']` means "pull these fields from the object" - it's the same as `{ access: true }`
+- `[{ ... }]` means "map this array with this selector"
+- `{ foo: true }` means "take only 'foo'"
+
+Mismatching types, like an array selector when the return is an object, are ignored.
