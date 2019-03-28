@@ -248,6 +248,7 @@ export const extract = (body: any, extraction: Extraction): any => {
   const output: any = {};
 
   if (typeof body !== 'object') return body;
+  if (body === null) return null;
 
   if (Array.isArray(body)) {
     // edge case for [...] and [{ ...mapping }]

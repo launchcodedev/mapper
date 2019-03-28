@@ -428,3 +428,8 @@ test('extract deep', () => {
 test('extract shallow array', () => {
   expect(extract([{ a: 1, b: 2 }], [{ a: true }])).toEqual([{ a: 1 }]);
 });
+
+test('extract null', () => {
+  expect(extract(null, { a: true })).toBe(null);
+  expect(extract({ a: null }, { a: true })).toEqual({ a: null });
+});
