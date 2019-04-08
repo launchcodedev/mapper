@@ -175,13 +175,17 @@ export type StructuredMappingOptions<I, O = I> = StructuredMappingFunc<I, O> | {
   array?: boolean;
 };
 
-export type StructuredMapping<I = any, O = I> = StructuredMappingOptions<I, O> | {
+export type StructuredMapping<I = any, O = I> = true | StructuredMappingOptions<I, O> | {
   [key: string]: StructuredMapping<any>;
 };
 
 export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D, O>): O => {
   if (typeof mapping === 'function') {
     return structuredMapper(data, { map: mapping });
+  }
+
+  if (mapping === true) {
+    return structuredMapper(data, { map: (v: any) => v });
   }
 
   if (mapping.map) {

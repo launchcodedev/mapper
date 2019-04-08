@@ -354,6 +354,24 @@ test('complex structure mapping', () => {
   });
 });
 
+test('structure mapping bypass', () => {
+  const mapping: StructuredMapping = {
+    foo: {
+      bar(value, dataType) {
+        return 'replaced';
+      },
+      baz: true,
+    },
+    bat: true,
+  };
+
+  expect(structuredMapper({ foo: { bar: 12, baz: 13 }, bat: 44 }, mapping))
+    .toEqual({ foo: { bar: 'replaced', baz: 13 }, bat: 44 });
+
+  expect(structuredMapper({ foo: { bar: 'baz', baz: 13 }, bat: 44 }, mapping))
+    .toEqual({ foo: { bar: 'replaced', baz: 13 }, bat: 44 });
+});
+
 test('mapping object', () => {
   const mapping: Mapping = {
     [DataType.Object]: (obj, key) => {
