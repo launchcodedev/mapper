@@ -232,7 +232,7 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
     } catch (err) {
       if (!mapping.optional) {
         throw err;
-      } else if (mapping.fallback !== undefined) {
+      } else if ('fallback' in mapping) {
         setProperty(output, prop, mapping.fallback, true);
       }
 
