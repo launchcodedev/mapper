@@ -269,6 +269,39 @@ test('structure mapping optional fallback', () => {
     .toEqual({ foo: { bar: 'fallback' } });
 });
 
+test('structure mapping rename', () => {
+  const mapping: StructuredMapping = {
+    bat: {
+      rename: 'loo',
+      map: v => v,
+    },
+    foo: {
+      bar: {
+        optional: true,
+        rename: 'bat',
+        map(value, dataType) {
+          return 'replaced';
+        },
+      },
+    },
+  };
+
+  expect(structuredMapper({ bat: 3, foo: { bar: 12 } }, mapping))
+    .toEqual({ loo: 3, foo: { bat: 'replaced' } });
+
+  expect(structuredMapper({ bat: 3, foo: {} }, mapping))
+    .toEqual({ loo: 3 });
+
+  expect(structuredMapper({ bat: 3 }, mapping))
+    .toEqual({ loo: 3 });
+
+  expect(structuredMapper({ bat: 3, foo: { bar: [] } }, mapping))
+    .toEqual({ loo: 3, foo: { bat: 'replaced' } });
+
+  expect(structuredMapper({ bat: 3, foo: [] }, mapping))
+    .toEqual({ loo: 3 });
+});
+
 test('structure mapping array', () => {
   const mapping: StructuredMapping = {
     foo: {
