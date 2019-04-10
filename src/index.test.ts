@@ -240,6 +240,35 @@ test('structure mapping optional', () => {
     .toEqual({});
 });
 
+test('structure mapping optional fallback', () => {
+  const mapping: StructuredMapping = {
+    foo: {
+      bar: {
+        fallback: 'fallback',
+        optional: true,
+        map(value, dataType) {
+          return 'replaced';
+        },
+      },
+    },
+  };
+
+  expect(structuredMapper({ foo: { bar: 12 } }, mapping))
+    .toEqual({ foo: { bar: 'replaced' } });
+
+  expect(structuredMapper({ foo: {} }, mapping))
+    .toEqual({ foo: { bar: 'fallback' } });
+
+  expect(structuredMapper({}, mapping))
+    .toEqual({ foo: { bar: 'fallback' } });
+
+  expect(structuredMapper({ foo: { bar: [] } }, mapping))
+    .toEqual({ foo: { bar: 'replaced' } });
+
+  expect(structuredMapper({ foo: [] }, mapping))
+    .toEqual({ foo: { bar: 'fallback' } });
+});
+
 test('structure mapping array', () => {
   const mapping: StructuredMapping = {
     foo: {
