@@ -172,6 +172,7 @@ export type StructuredMappingFunc<I, O = I> = (val: I, dataType: DataType) => O;
 export type StructuredMappingOptions<I, O = I> = StructuredMappingFunc<I, O> | {
   map: StructuredMappingFunc<I, O>;
   fallback?: O;
+  rename?: string;
   optional?: boolean;
   array?: boolean;
 };
@@ -213,7 +214,7 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
   }
 
   // get mappings without the trailing .map or .optional
-  const exclude = ['map', 'fallback', 'optional', 'array'];
+  const exclude = ['map', 'fallback', 'optional', 'rename', 'array'];
   const mappings = buildNestedPropertyAccessors(mapping).map((prop) => {
     if (exclude.includes(prop[prop.length - 1])) {
       return prop.slice(0, -1);
@@ -237,6 +238,10 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
       }
 
       return;
+    }
+
+    if (mapping.rename) {
+      prop.splice(-1, 1, mapping.rename);
     }
 
     setProperty(output, prop, structuredMapper(input, mapping), true);
