@@ -165,6 +165,8 @@ const setProperty = (obj: any, accessor: string[], value: any, createObjs = fals
     }
 
     setProperty(obj[accessor[0]], accessor.slice(1), value, createObjs);
+  } else if (accessor.length === 0) {
+    Object.assign(obj, value);
   }
 };
 

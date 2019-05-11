@@ -464,6 +464,12 @@ test('flatten structured mapping', () => {
   }, {
     a: { flatten: { b: { rename: 'bb', map: v => v } } },
   })).toEqual({ bb: 2 });
+
+  expect(structuredMapper({
+    a: { b: { bb: 2 } },
+  }, {
+    a: { flatten: { b: { flatten: true } } },
+  })).toEqual({ bb: 2 });
 });
 
 test('mapping object', () => {
