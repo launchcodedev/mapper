@@ -152,6 +152,7 @@ const getProperty = (obj: any, accessor: string[]) => accessor.reduce((obj, prop
   if (obj[property] !== undefined) {
     return obj[property];
   }
+
   throw new Error(`cannot getProperty ${accessor.join('.')}`);
 }, obj);
 
@@ -169,16 +170,31 @@ const setProperty = (obj: any, accessor: string[], value: any, createObjs = fals
 
 export type StructuredMappingFunc<I, O = I> = (val: I, dataType: DataType) => O;
 
-export type StructuredMappingOptions<I, O = I> = StructuredMappingFunc<I, O> | {
-  map: StructuredMappingFunc<I, O>;
-  fallback?: O;
-  rename?: string;
-  optional?: boolean;
-  array?: boolean;
-};
+export type StructuredMappingOptions<I, O = I> = StructuredMappingFunc<I, O> |
+  {
+    map: StructuredMappingFunc<I, O>;
+    rename?: string;
+    array?: true;
+  } | {
+    map: StructuredMappingFunc<I, O>;
+    rename?: string;
+    optional: boolean;
+    fallback?: O;
+    array?: true;
+  } | {
+    flatten: StructuredMapping<I, O>;
+  };
 
 export type StructuredMapping<I = any, O = I> = true | StructuredMappingOptions<I, O> | {
-  [key: string]: StructuredMapping<any>;
+  [key: string]: StructuredMapping<any> | undefined;
+
+  // disallowed keys, because they're special in StructuredMappingOptions
+  map?: never;
+  rename?: never;
+  array?: never;
+  optional?: never;
+  fallback?: never;
+  flatten?: never;
 };
 
 export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D, O>): O => {
@@ -190,8 +206,8 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
     return structuredMapper(data, { map: (v: any) => v });
   }
 
-  if (mapping.map) {
-    if (data === undefined && !mapping.optional) {
+  if ('map' in mapping) {
+    if (data === undefined && 'optional' in mapping && mapping.optional) {
       throw new Error('Cannot do a structured map on undefined');
     }
 
@@ -229,7 +245,8 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
     let input;
 
     try {
-      input = getProperty(data, prop);
+      // when getting the property, we ignore 'flatten'
+      input = getProperty(data, prop.filter((p: string) => p !== 'flatten'));
     } catch (err) {
       if (!mapping.optional) {
         throw err;
@@ -244,7 +261,13 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
       prop.splice(-1, 1, mapping.rename);
     }
 
-    setProperty(output, prop, structuredMapper(input, mapping), true);
+    // when setting the property, we fold 'flatten' upwards
+    const destProp = prop.reduce((acc: string[], p: string) => {
+      if (p === 'flatten') return acc.slice(0, -1);
+      return acc.concat(p);
+    }, []);
+
+    setProperty(output, destProp, structuredMapper(input, mapping), true);
   });
 
   return output as O;
