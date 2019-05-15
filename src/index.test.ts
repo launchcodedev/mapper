@@ -349,47 +349,47 @@ test('complex structure mapping', () => {
       },
     },
 
-    array: {
+    arr: {
       array: true,
       map: val => val ** 10,
     },
   };
 
   expect(() => structuredMapper({ top: 1 }, mapping)).toThrow();
-  expect(() => structuredMapper({ array: [] }, mapping)).toThrow();
+  expect(() => structuredMapper({ arr: [] }, mapping)).toThrow();
 
   expect(structuredMapper({
     top: 1,
-    array: [5, 10],
+    arr: [5, 10],
   }, mapping)).toEqual({
     top: 11,
-    array: [5 ** 10, 10 ** 10],
+    arr: [5 ** 10, 10 ** 10],
   });
 
   expect(structuredMapper({
     top: 1,
-    array: [5, 10],
+    arr: [5, 10],
     foo: { nest: 1 },
   }, mapping)).toEqual({
     top: 11,
-    array: [5 ** 10, 10 ** 10],
+    arr: [5 ** 10, 10 ** 10],
     foo: { nest: 10 },
   });
 
   expect(structuredMapper({
     top: 1,
-    array: [5, 10],
+    arr: [5, 10],
     foo: {
       more: {},
     },
   }, mapping)).toEqual({
     top: 11,
-    array: [5 ** 10, 10 ** 10],
+    arr: [5 ** 10, 10 ** 10],
   });
 
   expect(structuredMapper({
     top: 1,
-    array: [5, 10],
+    arr: [5, 10],
     foo: {
       more: {
         more: [],
@@ -397,13 +397,13 @@ test('complex structure mapping', () => {
     },
   }, mapping)).toEqual({
     top: 11,
-    array: [5 ** 10, 10 ** 10],
+    arr: [5 ** 10, 10 ** 10],
     foo: { more: { more: [] } },
   });
 
   expect(structuredMapper({
     top: 1,
-    array: [5, 10],
+    arr: [5, 10],
     foo: {
       more: {
         more: [1, 'dfkj', []],
@@ -411,7 +411,7 @@ test('complex structure mapping', () => {
     },
   }, mapping)).toEqual({
     top: 11,
-    array: [5 ** 10, 10 ** 10],
+    arr: [5 ** 10, 10 ** 10],
     foo: { more: { more: [1, 'str', []] } },
   });
 });
@@ -432,6 +432,44 @@ test('structure mapping bypass', () => {
 
   expect(structuredMapper({ foo: { bar: 'baz', baz: 13 }, bat: 44 }, mapping))
     .toEqual({ foo: { bar: 'replaced', baz: 13 }, bat: 44 });
+});
+
+test('flatten structured mapping', () => {
+  expect(structuredMapper({
+    a: { b: 2 },
+  }, {
+    a: { flatten: {} },
+  })).toEqual({});
+
+  expect(structuredMapper({
+    a: { b: 2 },
+  }, {
+    a: { flatten: { b: true } },
+  })).toEqual({ b: 2 });
+
+  expect(structuredMapper({
+    a: { b: 2 },
+  }, {
+    a: { flatten: { b: { optional: true, map: v => v } } },
+  })).toEqual({ b: 2 });
+
+  expect(structuredMapper({
+    a: {},
+  }, {
+    a: { flatten: { b: { optional: true, map: v => v } } },
+  })).toEqual({});
+
+  expect(structuredMapper({
+    a: { b: 2 },
+  }, {
+    a: { flatten: { b: { rename: 'bb', map: v => v } } },
+  })).toEqual({ bb: 2 });
+
+  expect(structuredMapper({
+    a: { b: { bb: 2 } },
+  }, {
+    a: { flatten: { b: { flatten: true } } },
+  })).toEqual({ bb: 2 });
 });
 
 test('mapping object', () => {
