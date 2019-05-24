@@ -212,6 +212,15 @@ test('structure mapping', () => {
     .toEqual({ foo: { bar: 'replaced' } });
 });
 
+test('structure mapping false', () => {
+  const mapping: StructuredMapping = {
+    foo: false,
+  };
+
+  expect(structuredMapper({ foo: { bar: 12 } }, mapping))
+    .toEqual({});
+});
+
 test('structure mapping optional', () => {
   const mapping: StructuredMapping = {
     foo: {
