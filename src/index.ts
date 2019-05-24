@@ -172,32 +172,52 @@ const setProperty = (obj: any, accessor: string[], value: any, createObjs = fals
 
 export type StructuredMappingFunc<I, O = I> = (val: I, dataType: DataType) => O;
 
-export type StructuredMappingOptions<I, O = I> = StructuredMappingFunc<I, O> |
+export type StructuredMappingObject<I, O = I> =
   {
     map: StructuredMappingFunc<I, O>;
     rename?: string;
     array?: true;
+    optional?: never;
+    fallback?: never;
+    flatten?: never;
   } | {
     map: StructuredMappingFunc<I, O>;
     rename?: string;
     optional: boolean;
     fallback?: O;
     array?: true;
+    flatten?: never;
   } | {
     flatten: StructuredMapping<I, O>;
+    map?: never;
+    rename?: never;
+    array?: never;
+    optional?: never;
+    fallback?: never;
   };
 
-export type StructuredMapping<I = any, O = I> = true | StructuredMappingOptions<I, O> | {
-  [key: string]: StructuredMapping<any> | undefined;
+export type StructuredMappingStructure<I, O = I> =
+  {
+    [key: string]: StructuredMapping<any> | undefined;
 
-  // disallowed keys, because they're special in StructuredMappingOptions
-  map?: never;
-  rename?: never;
-  array?: never;
-  optional?: never;
-  fallback?: never;
-  flatten?: never;
-};
+    // disallowed keys, because they're special in StructuredMappingObject
+    map?: never;
+    rename?: never;
+    array?: never;
+    optional?: never;
+    fallback?: never;
+    flatten?: never;
+  };
+
+export type StructuredMappingOptions<I, O = I> =
+  boolean |
+  StructuredMappingFunc<I, O> |
+  StructuredMappingObject<I, O> |
+  StructuredMappingStructure<I, O>;
+
+export type StructuredMapping<I = any, O = I> =
+  [boolean | StructuredMappingFunc<I, O> | StructuredMappingStructure<I, O>] |
+  StructuredMappingOptions<I, O>;
 
 export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D, O>): O => {
   if (typeof mapping === 'function') {
@@ -206,6 +226,21 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
 
   if (mapping === true) {
     return structuredMapper(data, { map: (v: any) => v });
+  }
+
+  if (mapping === false) {
+    return undefined as unknown as O;
+  }
+
+  if (Array.isArray(mapping)) {
+    if (mapping.length !== 1) {
+      throw new Error('Array mapping shorthand should be [bool | {} | v => v] syntax');
+    }
+
+    return structuredMapper(data, {
+      array: true,
+      map: (v: any) => structuredMapper(v, mapping[0]),
+    });
   }
 
   if ('map' in mapping) {

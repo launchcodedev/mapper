@@ -212,6 +212,15 @@ test('structure mapping', () => {
     .toEqual({ foo: { bar: 'replaced' } });
 });
 
+test('structure mapping false', () => {
+  const mapping: StructuredMapping = {
+    foo: false,
+  };
+
+  expect(structuredMapper({ foo: { bar: 12 } }, mapping))
+    .toEqual({});
+});
+
 test('structure mapping optional', () => {
   const mapping: StructuredMapping = {
     foo: {
@@ -273,13 +282,13 @@ test('structure mapping rename', () => {
   const mapping: StructuredMapping = {
     bat: {
       rename: 'loo',
-      map: v => v,
+      map: (v: any) => v,
     },
     foo: {
       bar: {
         optional: true,
         rename: 'bat',
-        map(value, dataType) {
+        map(value: any, dataType: DataType) {
           return 'replaced';
         },
       },
@@ -307,7 +316,7 @@ test('structure mapping array', () => {
     foo: {
       bar: {
         array: true,
-        map(value, dataType) {
+        map(value: any, dataType: DataType) {
           if (dataType === DataType.Number) {
             return value * 2;
           }
@@ -340,7 +349,7 @@ test('complex structure mapping', () => {
         more: {
           array: true,
           optional: true,
-          map(value, dataType) {
+          map(value: any, dataType: DataType) {
             if (dataType === DataType.String) return 'str';
 
             return value;
@@ -351,7 +360,7 @@ test('complex structure mapping', () => {
 
     arr: {
       array: true,
-      map: val => val ** 10,
+      map: (val: any) => val ** 10,
     },
   };
 
@@ -416,6 +425,46 @@ test('complex structure mapping', () => {
   });
 });
 
+test('structure mapping array shorthand', () => {
+  const mapping: StructuredMapping = {
+    foo: {
+      bar: [{ id: true }],
+      baz: [true],
+      bat: [v => v * 10],
+    },
+  };
+
+  expect(structuredMapper({
+    foo: {
+      bar: [{ id: 1, b: 2 }, { id: 2, c: 3 }, { id: 3 }, { id: 4, a: 1 }],
+      baz: [],
+      bat: [],
+    },
+  }, mapping)).toEqual({
+    foo: {
+      bar: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }],
+      baz: [],
+      bat: [],
+    },
+  });
+
+  expect(structuredMapper({
+    foo: {
+      bar: [],
+      baz: [1, '2', 3, '4'],
+      bat: [1, 2, 3, 4],
+    },
+  }, mapping)).toEqual({
+    foo: {
+      bar: [],
+      baz: [1, '2', 3, '4'],
+      bat: [10, 20, 30, 40],
+    },
+  });
+
+  expect(() => structuredMapper({ foo: { bar: [{ b: true }] } }, mapping)).toThrow();
+});
+
 test('structure mapping bypass', () => {
   const mapping: StructuredMapping = {
     foo: {
@@ -462,7 +511,7 @@ test('flatten structured mapping', () => {
   expect(structuredMapper({
     a: { b: 2 },
   }, {
-    a: { flatten: { b: { rename: 'bb', map: v => v } } },
+    a: { flatten: { b: { rename: 'bb', map: (v: any) => v } } },
   })).toEqual({ bb: 2 });
 
   expect(structuredMapper({
