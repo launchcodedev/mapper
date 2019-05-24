@@ -233,7 +233,9 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
   }
 
   if (Array.isArray(mapping)) {
-    if (mapping.length !== 1) throw new Error('Array mapping shorthand should be [{}] syntax');
+    if (mapping.length !== 1) {
+      throw new Error('Array mapping shorthand should be [bool | {} | v => v] syntax');
+    }
 
     return structuredMapper(data, {
       array: true,
