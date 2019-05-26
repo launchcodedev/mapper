@@ -219,8 +219,8 @@ export type StructuredMapping<I = any, O = I> =
   [
     boolean |
     // using O[0] to extract the type of array elements that it maps to
-    StructuredMappingFunc<I, O extends Array<any> ? O[0] : never> |
-    StructuredMappingStructure<I, O extends Array<any> ? O[0] : never>
+    StructuredMappingFunc<I, O extends any[] ? O[0] : never> |
+    StructuredMappingStructure<I, O extends any[] ? O[0] : never>
   ] |
   StructuredMappingOptions<I, O>;
 
