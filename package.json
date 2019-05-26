@@ -1,7 +1,7 @@
 {
   "name": "@servall/mapper",
   "description": "Simple object mapping with visitor support",
-  "version": "0.1.8-dev",
+  "version": "0.1.8",
   "license": "UNLICENSED",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
