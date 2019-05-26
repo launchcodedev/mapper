@@ -216,7 +216,12 @@ export type StructuredMappingOptions<I, O = I> =
   StructuredMappingStructure<I, O>;
 
 export type StructuredMapping<I = any, O = I> =
-  [boolean | StructuredMappingFunc<I, O> | StructuredMappingStructure<I, O>] |
+  [
+    boolean |
+    // using O[0] to extract the type of array elements that it maps to
+    StructuredMappingFunc<I, O extends Array<any> ? O[0] : never> |
+    StructuredMappingStructure<I, O extends Array<any> ? O[0] : never>
+  ] |
   StructuredMappingOptions<I, O>;
 
 export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D, O>): O => {
@@ -239,7 +244,7 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
 
     return structuredMapper(data, {
       array: true,
-      map: (v: any) => structuredMapper(v, mapping[0]),
+      map: (v: any) => structuredMapper(v, mapping[0] as any),
     });
   }
 

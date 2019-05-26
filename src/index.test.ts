@@ -465,6 +465,13 @@ test('structure mapping array shorthand', () => {
   expect(() => structuredMapper({ foo: { bar: [{ b: true }] } }, mapping)).toThrow();
 });
 
+test('structure mapping array shorthand array', () => {
+  const mapping: StructuredMapping = [{ foo: true }];
+
+  expect(structuredMapper<{ foo: string, bar: string }[]>([{ foo: 'bar', bar: 'baz' }], mapping))
+    .toEqual([{ foo: 'bar' }]);
+});
+
 test('structure mapping bypass', () => {
   const mapping: StructuredMapping = {
     foo: {
