@@ -573,6 +573,18 @@ describe('structuredMapper', () => {
       a: { flatten: { b: { flatten: true } } },
     })).toEqual({ bb: 2 });
   });
+
+  test('undefined with optional mapping', () => {
+    expect(structuredMapper(undefined, { optional: true, map: v => v })).toEqual(undefined);
+  });
+
+  test('illegal', () => {
+    expect(() => structuredMapper<any>({}, [true, true])).toThrow();
+    expect(() => structuredMapper<any>([], { a: true })).toThrow();
+    expect(() => structuredMapper<any>(1, { a: true })).toThrow();
+    expect(() => structuredMapper<any>({}, [true])).toThrow();
+    expect(() => structuredMapper<any>(undefined, {})).toThrow();
+  });
 });
 
 describe('extract', () => {
@@ -583,6 +595,7 @@ describe('extract', () => {
     expect(extract({}, { foo: true })).toEqual({});
     expect(extract({ foo: 1 }, { foo: true })).toEqual({ foo: 1 });
     expect(extract({ foo: {} }, { foo: true })).toEqual({ foo: {} });
+    expect(extract({ foo: {} }, { foo: false })).toEqual({});
     expect(extract({ foo: 1 }, { foo: [] })).toEqual({});
     expect(extract({ foo: 1 }, { foo: ['bar'] })).toEqual({});
     expect(extract({ foo: { bar: 1 } }, { foo: ['bar'] })).toEqual({ foo: { bar: 1 } });
@@ -597,10 +610,18 @@ describe('extract', () => {
         {},
       ],
     });
+
+    expect(extract([1, 2, 3], true)).toEqual([1, 2, 3]);
   });
 
   test('shallow array', () => {
     expect(extract([{ a: 1, b: 2 }], [{ a: true }])).toEqual([{ a: 1 }]);
+  });
+
+  test('array map on object', () => {
+    expect(extract({ a: 1 }, [{}])).toEqual({ a: 1 });
+    expect(extract({ a: { b: 1 } }, { a: [{}] })).toEqual({});
+    expect(() => extract({}, { a: [{}, {}] })).toThrow();
   });
 
   test('deep', () => {
@@ -633,6 +654,12 @@ describe('extract', () => {
     };
 
     expect(extract(response, extraction)).toEqual(expected);
+  });
+
+  test('recurse', () => {
+    expect(extract({}, { foo: { bar: { baz: true } } })).toEqual({});
+    expect(extract({ foo: { bar: { baz: 1 } } }, { foo: { bar: { baz: true } } }))
+      .toEqual({ foo: { bar: { baz: 1 } } });
   });
 
   test('null', () => {
