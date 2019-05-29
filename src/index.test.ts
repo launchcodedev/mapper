@@ -1,3 +1,4 @@
+import * as moment from 'moment';
 import {
   DataType,
   Mapping,
@@ -7,47 +8,73 @@ import {
   extract,
   structuredMapper,
 } from './index';
-import * as moment from 'moment';
 
-test('to data type', () => {
-  const mappings: [any, DataType][] = [
-    [undefined, DataType.Undefined],
-    [null, DataType.Null],
-    ['', DataType.String],
-    ['string', DataType.String],
-    [String('string'), DataType.String],
-    [`string ${1}`, DataType.String],
-    [0, DataType.Number],
-    [+1000, DataType.Number],
-    [-1000, DataType.Number],
-    [Infinity, DataType.Number],
-    [-Infinity, DataType.Number],
-    [NaN, DataType.Number],
-    [Number(10), DataType.Number],
-    [true, DataType.Boolean],
-    [false, DataType.Boolean],
-    [() => {}, DataType.Function],
-    [function () {}, DataType.Function],
-    [Number.isNaN, DataType.Function],
-    [[], DataType.Array],
-    [Array(), DataType.Array],
-    [{}, DataType.Object],
-    [new Object, DataType.Object],
-    [global, DataType.Object],
-    [new Date, DataType.Date],
-  ];
+describe('data type', () => {
+  // these do bad things like new String()
+  // tslint:disable
+  test('string', () => {
+    expect(toDataType('')).toBe(DataType.String);
+    expect(toDataType('string')).toBe(DataType.String);
+    expect(toDataType(new String('string'))).toBe(DataType.String);
+    expect(toDataType(String('string'))).toBe(DataType.String);
+    expect(toDataType([].toString())).toBe(DataType.String);
+  });
 
-  expect(toDataType()).toBe(DataType.Undefined);
+  test('number', () => {
+    expect(toDataType(0)).toBe(DataType.Number);
+    expect(toDataType(-1)).toBe(DataType.Number);
+    expect(toDataType(+1)).toBe(DataType.Number);
+    expect(toDataType(-Infinity)).toBe(DataType.Number);
+    expect(toDataType(+Infinity)).toBe(DataType.Number);
+    expect(toDataType(NaN)).toBe(DataType.Number);
+    expect(toDataType(Number(1))).toBe(DataType.Number);
+  });
 
-  for (const [val, dataType] of mappings) {
-    expect(toDataType(val)).toBe(dataType);
-  }
+  test('boolean', () => {
+    expect(toDataType(true)).toBe(DataType.Boolean);
+    expect(toDataType(false)).toBe(DataType.Boolean);
+  });
 
-  (function (this: any, ...args: any) {
-    expect(toDataType(this)).toBe(DataType.Object);
-    // array-like, but not really
-    expect(toDataType(arguments)).toBe(DataType.Object);
-  }).call({}, 1, 2, 3);
+  test('function', () => {
+    expect(toDataType(() => {})).toBe(DataType.Function);
+    expect(toDataType(function(){})).toBe(DataType.Function);
+    expect(toDataType(parseFloat)).toBe(DataType.Function);
+    expect(toDataType([].map)).toBe(DataType.Function);
+  });
+
+  test('null', () => {
+    expect(toDataType(null)).toBe(DataType.Null);
+  });
+
+  test('undefined', () => {
+    expect(toDataType()).toBe(DataType.Undefined);
+    expect(toDataType(undefined)).toBe(DataType.Undefined);
+  });
+
+  test('date', () => {
+    expect(toDataType(new Date)).toBe(DataType.Date);
+  });
+
+  test('array', () => {
+    expect(toDataType([])).toBe(DataType.Array);
+    expect(toDataType([1, 2, 3])).toBe(DataType.Array);
+    expect(toDataType(new Array())).toBe(DataType.Array);
+    expect(toDataType(Array.from([]))).toBe(DataType.Array);
+  });
+
+  test('object', () => {
+    expect(toDataType({})).toBe(DataType.Object);
+    expect(toDataType(new Map)).toBe(DataType.Object);
+    expect(toDataType(new Object)).toBe(DataType.Object);
+
+    (function (this: any, ...args: any) {
+      expect(toDataType(this)).toBe(DataType.Object);
+      // arguments is array-like, args is an array
+      expect(toDataType(arguments)).toBe(DataType.Object);
+      expect(toDataType(args)).toBe(DataType.Array);
+    }).call({}, 1, 2, 3);
+  });
+  // tslint:enable
 });
 
 test('mapper without options', () => {
