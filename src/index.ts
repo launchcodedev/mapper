@@ -328,7 +328,9 @@ export const extract = (body: any, extraction: Extraction): any => {
   if (body === null) return null;
 
   // for [...] and [{ ...mapping }]
-  const isArrMap = Array.isArray(extraction) && extraction.length === 1 && typeof extraction[0] === 'object';
+  const isArrMap = Array.isArray(extraction)
+    && extraction.length === 1
+    && typeof extraction[0] === 'object';
 
   if (Array.isArray(body)) {
     if (isArrMap) {
@@ -336,9 +338,10 @@ export const extract = (body: any, extraction: Extraction): any => {
     }
 
     return body;
-  } else if (isArrMap) {
-    return body;
   }
+
+  // we know that body is not an array
+  if (isArrMap) return body;
 
   for (const [field, extractField] of Object.entries(extraction)) {
     // either [{ bar: true }] or ['fieldA', 'fieldB']
