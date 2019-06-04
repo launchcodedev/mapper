@@ -11,7 +11,7 @@ export enum DataType {
   Unknown,
 }
 
-type MappingFunc<T> = (val: T, key?: string) => any;
+type MappingFunc<T> = (val: T, key?: string, contextualKey?: string) => any;
 
 export type Mapping = {
   [DataType.String]?: MappingFunc<string>;
@@ -27,9 +27,9 @@ export type Mapping = {
 
   custom?: [
     // use this mapping?
-    (data: any, dataType: DataType, key?: string) => boolean,
+    (data: any, dataType: DataType, key?: string, contextualKey?: string) => boolean,
     // do the mapping
-    (data: any, dataType: DataType, key?: string) => any,
+    (data: any, dataType: DataType, key?: string, contextualKey?: string) => any,
   ][];
 };
 
@@ -73,21 +73,28 @@ export const toDataType = (data?: any): DataType => {
   return DataType.Unknown;
 };
 
-export const mapper = <D>(data: D, mapping: Mapping = {}, key?: string): any => {
+export const mapper = <D>(
+  data: D,
+  mapping: Mapping = {},
+  key?: string,
+  contextualKey?: string,
+): any => {
   const dataType = toDataType(data);
 
   if (mapping.custom) {
-    const func = mapping.custom.find(([useThisMapping]) => useThisMapping(data, dataType, key));
+    const func = mapping.custom.find(([useThisMapping]) => (
+      useThisMapping(data, dataType, key, contextualKey)
+    ));
 
     if (func) {
-      return func[1](data, dataType, key);
+      return func[1](data, dataType, key, contextualKey);
     }
   }
 
   const mappingFunc = mapping[dataType];
 
   if (mappingFunc) {
-    const result = mappingFunc(data as never, key);
+    const result = mappingFunc(data as never, key, contextualKey);
 
     // in short, a transform of:
     //
@@ -101,13 +108,22 @@ export const mapper = <D>(data: D, mapping: Mapping = {}, key?: string): any => 
 
   switch (dataType) {
     case DataType.Array:
+
       // have to use Array.from because of array-like objects
-      return Array.from(data as any).map(val => mapper(val, mapping)) as unknown as D;
+      return Array.from(data as any).map((val, i) => (
+        mapper(val, mapping, key, `${contextualKey}[${i}]`)
+      )) as unknown as D;
 
     case DataType.Object:
       const output: any = {};
+
       for (const [key, value] of Object.entries(data)) {
-        output[key] = mapper(value, mapping, key);
+        output[key] = mapper(
+          value,
+          mapping,
+          key,
+          contextualKey ? `${contextualKey}.${key}` : key,
+        );
       }
 
       return output as D;
