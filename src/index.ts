@@ -250,7 +250,7 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
 
   if ('map' in mapping) {
     if (data === undefined && 'optional' in mapping && mapping.optional) {
-      throw new Error('Cannot do a structured map on undefined');
+      return undefined as unknown as O;
     }
 
     if (mapping.array) {
@@ -327,14 +327,21 @@ export const extract = (body: any, extraction: Extraction): any => {
   if (typeof body !== 'object') return body;
   if (body === null) return null;
 
+  // for [...] and [{ ...mapping }]
+  const isArrMap = Array.isArray(extraction)
+    && extraction.length === 1
+    && typeof extraction[0] === 'object';
+
   if (Array.isArray(body)) {
-    // edge case for [...] and [{ ...mapping }]
-    if (Array.isArray(extraction) && extraction.length === 1 && typeof extraction[0] === 'object') {
-      return body.map(v => extract(v, extraction[0] as any));
+    if (isArrMap) {
+      return body.map(v => extract(v, (extraction as any[])[0]));
     }
 
     return body;
   }
+
+  // we know that body is not an array
+  if (isArrMap) return body;
 
   for (const [field, extractField] of Object.entries(extraction)) {
     // either [{ bar: true }] or ['fieldA', 'fieldB']
