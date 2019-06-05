@@ -82,12 +82,15 @@ export const mapper = <D>(
   const dataType = toDataType(data);
 
   if (mapping.custom) {
-    const func = mapping.custom.find(([useThisMapping]) => (
+    const funcs = mapping.custom.filter(([useThisMapping]) => (
       useThisMapping(data, dataType, key, contextualKey)
     ));
 
-    if (func) {
-      return func[1](data, dataType, key, contextualKey);
+    if (funcs.length) {
+      return funcs.reduce(
+        (acc, [, fn]) => fn(acc, dataType, key, contextualKey),
+        data,
+      );
     }
   }
 
@@ -112,7 +115,7 @@ export const mapper = <D>(
       // have to use Array.from because of array-like objects
       return Array.from(data as any).map((val, i) => (
         mapper(val, mapping, key, `${contextualKey}[${i}]`)
-      )) as unknown as D;
+      ));
 
     case DataType.Object:
       const output: any = {};

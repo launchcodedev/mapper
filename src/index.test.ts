@@ -165,17 +165,25 @@ describe('mapper', () => {
       custom: [
         [
           (_, dataType) => dataType === DataType.Number,
+          data => data * 2,
+        ],
+        [
+          (_, __, key) => key === 'foo',
           data => data / 2,
+        ],
+        [
+          (_, __, ___, cKey) => cKey === 'bar.baz',
+          data => data * 4,
         ],
       ],
     };
 
     const objs: [any, any][] = [
       [{}, {}],
-      [1, 0.5],
-      [2, 1],
-      [{ foo: 0 }, { foo: 0 }],
-      [{ foo: 2 }, { foo: 1 }],
+      [1, 2],
+      [{ foo: 2 }, { foo: 2 }],
+      [{ foo: 1, bar: 1 }, { foo: 1, bar: 2 }],
+      [{ bar: { baz: 1, bat: 1 } }, { bar: { baz: 8, bat: 2 } }],
     ];
 
     for (const [input, output] of objs) {
