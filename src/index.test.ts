@@ -251,74 +251,30 @@ describe('mapper', () => {
     };
 
     mapper(
-        {
-          baz: '',
+      {
+        baz: '',
+        foo: '',
+        bar: {
           foo: '',
-          bar: {
-            foo: '',
-          },
-          bao: {
-            boo: [
-              {
-                baz: '',
-              },
-              {
-                baz: '',
-                joo: [
-                  {
-                    pls: '',
-                  },
-                ],
-              },
-            ],
-          },
         },
-        mapping)
-    // expect(mapper(
-    //   {
-    //     baz: '',
-    //     foo: '',
-    //     bar: {
-    //       foo: '',
-    //     },
-    //     bao: {
-    //       boo: [
-    //         {
-    //           baz: '',
-    //         },
-    //         {
-    //           baz: '',
-    //           joo: [
-    //             {
-    //               pls: '',
-    //             },
-    //           ],
-    //         },
-    //       ],
-    //     },
-    //   },
-    //   mapping)).toEqual({
-    //     baz: '',
-    //     foo: '',
-    //     bar: {
-    //       foo: '',
-    //     },
-    //     bao: {
-    //       boo: [
-    //         {
-    //           baz: '',
-    //         },
-    //         {
-    //           baz: '',
-    //           joo: [
-    //             {
-    //               pls: '',
-    //             },
-    //           ],
-    //         },
-    //       ],
-    //     },
-      });
+        bao: {
+          boo: [
+            {
+              baz: '',
+            },
+            {
+              baz: '',
+              joo: [
+                {
+                  pls: '',
+                },
+              ],
+            },
+          ],
+        },
+      },
+      mapping,
+    );
 
     expect(keys).toEqual([
       'baz',
