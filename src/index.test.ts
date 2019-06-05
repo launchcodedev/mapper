@@ -239,6 +239,72 @@ describe('mapper', () => {
       bar: { foo: 'baz' },
     });
   });
+
+  test('contextual keys', () => {
+    const keys: string[] = [];
+
+    const mapping: Mapping = {
+      [DataType.String]: (s, key, contextualKey) => {
+        keys.push(contextualKey!);
+        return s;
+      },
+    };
+
+    expect(mapper(
+      {
+        baz: '',
+        foo: '',
+        bar: {
+          foo: '',
+        },
+        bao: {
+          boo: [
+            {
+              baz: '',
+            },
+            {
+              baz: '',
+              joo: [
+                {
+                  pls: '',
+                },
+              ],
+            },
+          ],
+        },
+      },
+      mapping)).toEqual({
+        baz: '',
+        foo: '',
+        bar: {
+          foo: '',
+        },
+        bao: {
+          boo: [
+            {
+              baz: '',
+            },
+            {
+              baz: '',
+              joo: [
+                {
+                  pls: '',
+                },
+              ],
+            },
+          ],
+        },
+      });
+
+    expect(keys).toEqual([
+      'baz',
+      'foo',
+      'bar.foo',
+      'bao.boo[0].baz',
+      'bao.boo[1].baz',
+      'bao.boo[1].joo[0].pls',
+    ]);
+  });
 });
 
 describe('structuredMapper', () => {
