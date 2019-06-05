@@ -250,50 +250,74 @@ describe('mapper', () => {
       },
     };
 
-    expect(mapper(
-      {
-        baz: '',
-        foo: '',
-        bar: {
+    mapper(
+        {
+          baz: '',
           foo: '',
+          bar: {
+            foo: '',
+          },
+          bao: {
+            boo: [
+              {
+                baz: '',
+              },
+              {
+                baz: '',
+                joo: [
+                  {
+                    pls: '',
+                  },
+                ],
+              },
+            ],
+          },
         },
-        bao: {
-          boo: [
-            {
-              baz: '',
-            },
-            {
-              baz: '',
-              joo: [
-                {
-                  pls: '',
-                },
-              ],
-            },
-          ],
-        },
-      },
-      mapping)).toEqual({
-        baz: '',
-        foo: '',
-        bar: {
-          foo: '',
-        },
-        bao: {
-          boo: [
-            {
-              baz: '',
-            },
-            {
-              baz: '',
-              joo: [
-                {
-                  pls: '',
-                },
-              ],
-            },
-          ],
-        },
+        mapping)
+    // expect(mapper(
+    //   {
+    //     baz: '',
+    //     foo: '',
+    //     bar: {
+    //       foo: '',
+    //     },
+    //     bao: {
+    //       boo: [
+    //         {
+    //           baz: '',
+    //         },
+    //         {
+    //           baz: '',
+    //           joo: [
+    //             {
+    //               pls: '',
+    //             },
+    //           ],
+    //         },
+    //       ],
+    //     },
+    //   },
+    //   mapping)).toEqual({
+    //     baz: '',
+    //     foo: '',
+    //     bar: {
+    //       foo: '',
+    //     },
+    //     bao: {
+    //       boo: [
+    //         {
+    //           baz: '',
+    //         },
+    //         {
+    //           baz: '',
+    //           joo: [
+    //             {
+    //               pls: '',
+    //             },
+    //           ],
+    //         },
+    //       ],
+    //     },
       });
 
     expect(keys).toEqual([
