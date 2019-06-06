@@ -114,7 +114,7 @@ export const mapper = <D>(
 
       // have to use Array.from because of array-like objects
       return Array.from(data as any).map((val, i) => (
-        mapper(val, mapping, key, `${contextualKey}[${i}]`)
+        mapper(val, mapping, key, contextualKey ? `${contextualKey}[${i}]` : `[${i}]`)
       ));
 
     case DataType.Object:
