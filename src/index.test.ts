@@ -293,6 +293,18 @@ describe('mapper', () => {
       'bao.boo[1].joo[0].pls',
     ]);
   });
+
+  test('class object', () => {
+    const spy = jest.spyOn(console, 'warn');
+
+    class Testing { x = 1 }
+    expect(mapper(new Testing(), {})).toEqual({ x: 1 });
+
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith('Iterating over a Testing, which will lose your class instance type');
+
+    spy.mockRestore();
+  });
 });
 
 describe('structuredMapper', () => {
