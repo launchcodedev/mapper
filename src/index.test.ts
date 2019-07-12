@@ -297,15 +297,18 @@ describe('mapper', () => {
   test('class object', () => {
     const spy = jest.spyOn(console, 'warn');
 
-    class Testing { x = 1 }
+    class Testing { x = 1; }
     expect(mapper(new Testing(), {})).toEqual({ x: 1 });
     expect(mapper(new Map(), {})).toEqual({});
     expect(mapper(new Set(), {})).toEqual({});
 
     expect(spy).toHaveBeenCalledTimes(3);
-    expect(spy).toHaveBeenCalledWith('Iterating over a Testing, which will lose your class instance type');
-    expect(spy).toHaveBeenCalledWith('Iterating over a Map, which will lose your class instance type');
-    expect(spy).toHaveBeenCalledWith('Iterating over a Set, which will lose your class instance type');
+    expect(spy)
+      .toHaveBeenCalledWith('Iterating over a Testing, which will lose your class instance type');
+    expect(spy)
+      .toHaveBeenCalledWith('Iterating over a Map, which will lose your class instance type');
+    expect(spy)
+      .toHaveBeenCalledWith('Iterating over a Set, which will lose your class instance type');
 
     spy.mockRestore();
   });
