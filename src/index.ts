@@ -120,6 +120,12 @@ export const mapper = <D>(
     case DataType.Object:
       const output: any = {};
 
+      if (data.constructor.name !== 'Object') {
+        console.warn(
+          `Iterating over a ${data.constructor.name}, which will lose your class instance type`,
+        );
+      }
+
       for (const [key, value] of Object.entries(data)) {
         output[key] = mapper(
           value,
