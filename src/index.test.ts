@@ -658,6 +658,79 @@ describe('structuredMapper', () => {
     expect(() => structuredMapper<any>({}, [true])).toThrow();
     expect(() => structuredMapper<any>(undefined, {})).toThrow();
   });
+
+  test('additionalProperties', () => {
+    const input1 = {
+      foo: 'bar',
+    };
+
+    expect(structuredMapper(input1, {})).toEqual({});
+    expect(structuredMapper(input1, { additionalProperties: true })).toEqual({ foo: 'bar' });
+    expect(structuredMapper(input1, { foo: false, additionalProperties: true })).toEqual({});
+
+    const input2 = {
+      foo: 'bar',
+      bar: 'baz',
+    };
+
+    expect(structuredMapper(input2, {
+      foo: false,
+      additionalProperties: true,
+    })).toEqual({ bar: 'baz' });
+
+    const input3 = {
+      foo: 'bar',
+      bar: 'baz',
+      bat: 12,
+    };
+
+    expect(structuredMapper(input3, {
+      foo: false,
+      bat: v => v * 2,
+      additionalProperties: true,
+    })).toEqual({
+      bar: 'baz',
+      bat: 24,
+    });
+
+    const input4 = {
+      foo: 'bar',
+      bar: {
+        foo: 'bar',
+        bar: {
+          foo: 'bar',
+        },
+      },
+    };
+
+    expect(structuredMapper(input4, {
+      bar: {
+        foo: true,
+        additionalProperties: true,
+      },
+    })).toEqual({
+      bar: {
+        foo: 'bar',
+        bar: {
+          foo: 'bar',
+        },
+      },
+    });
+
+    expect(structuredMapper(input4, {
+      bar: {
+        bar: {
+          additionalProperties: true,
+        },
+      },
+    })).toEqual({
+      bar: {
+        bar: {
+          foo: 'bar',
+        },
+      },
+    });
+  });
 });
 
 describe('extract', () => {
