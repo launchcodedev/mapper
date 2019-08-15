@@ -205,6 +205,7 @@ export type StructuredMappingObject<I, O = I> =
     optional?: never;
     fallback?: never;
     flatten?: never;
+    additionalProperties?: never;
   } | {
     map: StructuredMappingFunc<I, O>;
     rename?: string;
@@ -212,6 +213,7 @@ export type StructuredMappingObject<I, O = I> =
     fallback?: O;
     array?: true;
     flatten?: never;
+    additionalProperties?: never;
   } | {
     flatten: StructuredMapping<I, O>;
     map?: never;
@@ -219,11 +221,13 @@ export type StructuredMappingObject<I, O = I> =
     array?: never;
     optional?: never;
     fallback?: never;
+    additionalProperties?: never;
   };
 
 export type StructuredMappingStructure<I, O = I> =
   {
     [key: string]: StructuredMapping<any> | undefined;
+    additionalProperties?: boolean;
 
     // disallowed keys, because they're special in StructuredMappingObject
     map?: never;
@@ -297,16 +301,22 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
   }
 
   // get mappings without the trailing .map or .optional
-  const exclude = ['map', 'fallback', 'optional', 'rename', 'array'];
-  const mappings = buildNestedPropertyAccessors(mapping).map((prop) => {
-    if (exclude.includes(prop[prop.length - 1])) {
-      return prop.slice(0, -1);
-    }
+  const exclude = ['map', 'fallback', 'optional', 'rename', 'array', 'additionalProperties'];
+  const mappings = buildNestedPropertyAccessors(mapping)
+    .map((prop) => {
+      if (exclude.includes(prop[prop.length - 1])) {
+        return prop.slice(0, -1);
+      }
 
-    return prop;
-  });
+      return prop;
+    })
+    .filter(v => v.length > 0);
 
   const output = {};
+
+  if (mapping.additionalProperties) {
+    Object.assign(output, data);
+  }
 
   mappings.map(prop => [prop, getProperty(mapping, prop)]).forEach(([prop, mapping]) => {
     let input;
