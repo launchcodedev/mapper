@@ -340,12 +340,12 @@ describe('structuredMapper', () => {
       .toEqual({});
   });
 
-  test('optinal mapping', () => {
+  test('optional mapping', () => {
     const mapping: StructuredMapping = {
       foo: {
         bar: {
           optional: true,
-          map(value, dataType) {
+          map() {
             return 'replaced';
           },
         },
@@ -374,7 +374,7 @@ describe('structuredMapper', () => {
         bar: {
           fallback: 'fallback',
           optional: true,
-          map(value, dataType) {
+          map() {
             return 'replaced';
           },
         },
@@ -394,6 +394,72 @@ describe('structuredMapper', () => {
       .toEqual({ foo: { bar: 'replaced' } });
 
     expect(structuredMapper({ foo: [] }, mapping))
+      .toEqual({ foo: { bar: 'fallback' } });
+  });
+
+  test('nullable mapping', () => {
+    const mapping: StructuredMapping = {
+      foo: {
+        bar: {
+          nullable: true,
+          map() {
+            return 'replaced';
+          },
+        },
+      },
+    };
+
+    expect(structuredMapper({ foo: { bar: null } }, mapping))
+      .toEqual({ foo: { bar: null } });
+
+    expect(structuredMapper({ foo: { bar: 1 } }, mapping))
+      .toEqual({ foo: { bar: 'replaced' } });
+  });
+
+  test('nullable with fallback', () => {
+    const mapping: StructuredMapping = {
+      foo: {
+        bar: {
+          fallback: 'fallback',
+          nullable: true,
+          map() {
+            return 'replaced';
+          },
+        },
+      },
+    };
+
+    expect(structuredMapper({ foo: { bar: 12 } }, mapping))
+      .toEqual({ foo: { bar: 'replaced' } });
+
+    expect(structuredMapper({ foo: { bar: null } }, mapping))
+      .toEqual({ foo: { bar: 'fallback' } });
+  });
+
+  test('nullable and optional mapping', () => {
+    const mapping: StructuredMapping = {
+      foo: {
+        bar: {
+          nullable: true,
+          optional: true,
+          fallback: 'fallback',
+          map() {
+            return 'replaced';
+          },
+        },
+      },
+    };
+
+    expect(structuredMapper({ foo: { bar: 12 } }, mapping))
+      .toEqual({ foo: { bar: 'replaced' } });
+
+    expect(structuredMapper({ foo: {} }, mapping))
+      .toEqual({ foo: { bar: 'fallback' } });
+
+    expect(structuredMapper({}, mapping))
+      .toEqual({ foo: { bar: 'fallback' } });
+
+    expect(structuredMapper({ foo: { bar: null } }, mapping))
       .toEqual({ foo: { bar: 'fallback' } });
   });
 
@@ -462,7 +528,7 @@ describe('structuredMapper', () => {
       foo: {
         nest: {
           optional: true,
-          map: value => value * 10,
+          map: (value: number) => value * 10,
         },
         more: {
           more: {
@@ -625,13 +691,13 @@ describe('structuredMapper', () => {
     expect(structuredMapper({
       a: { b: 2 },
     }, {
-      a: { flatten: { b: { optional: true, map: v => v } } },
+      a: { flatten: { b: { optional: true, map: (v: any) => v } } },
     })).toEqual({ b: 2 });
 
     expect(structuredMapper({
       a: {},
     }, {
-      a: { flatten: { b: { optional: true, map: v => v } } },
+      a: { flatten: { b: { optional: true, map: (v: any) => v } } },
     })).toEqual({});
 
     expect(structuredMapper({
@@ -648,7 +714,7 @@ describe('structuredMapper', () => {
   });
 
   test('undefined with optional mapping', () => {
-    expect(structuredMapper(undefined, { optional: true, map: v => v })).toEqual(undefined);
+    expect(structuredMapper(undefined, { optional: true, map: (v: any) => v })).toEqual(undefined);
   });
 
   test('illegal', () => {
