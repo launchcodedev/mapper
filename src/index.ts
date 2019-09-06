@@ -178,7 +178,7 @@ const getProperty = (obj: any, accessor: string[]) => accessor.reduce((obj, prop
     return obj[property];
   }
 
-  throw new Error(`cannot getProperty ${accessor.join('.')}`);
+  throw new Error(`@servall/mapper could not access property '${accessor.join('.')}'`);
 }, obj);
 
 const setProperty = (obj: any, accessor: string[], value: any, createObjs = false) => {
@@ -203,6 +203,7 @@ export type StructuredMappingObject<I, O = I> =
     rename?: string;
     array?: true;
     optional?: never;
+    nullable?: never;
     fallback?: never;
     flatten?: never;
     additionalProperties?: never;
@@ -210,6 +211,16 @@ export type StructuredMappingObject<I, O = I> =
     map: StructuredMappingFunc<I, O>;
     rename?: string;
     optional: boolean;
+    nullable?: never;
+    fallback?: O;
+    array?: true;
+    flatten?: never;
+    additionalProperties?: never;
+  } | {
+    map: StructuredMappingFunc<I, O>;
+    rename?: string;
+    optional?: boolean;
+    nullable: boolean;
     fallback?: O;
     array?: true;
     flatten?: never;
@@ -220,6 +231,7 @@ export type StructuredMappingObject<I, O = I> =
     rename?: never;
     array?: never;
     optional?: never;
+    nullable?: never;
     fallback?: never;
     additionalProperties?: never;
   };
@@ -234,6 +246,7 @@ export type StructuredMappingStructure<I, O = I> =
     rename?: never;
     array?: never;
     optional?: never;
+    nullable?: never;
     fallback?: never;
     flatten?: never;
   };
@@ -282,6 +295,14 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
       return undefined as unknown as O;
     }
 
+    if (data === null && 'nullable' in mapping && mapping.nullable) {
+      if ('fallback' in mapping) {
+        return mapping.fallback as any;
+      }
+
+      return null as unknown as O;
+    }
+
     if (mapping.array) {
       if (toDataType(data) !== DataType.Array) {
         throw new Error('received an array mapping, but input data was not');
@@ -301,7 +322,9 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
   }
 
   // get mappings without the trailing .map or .optional
-  const exclude = ['map', 'fallback', 'optional', 'rename', 'array', 'additionalProperties'];
+  const exclude = [
+    'map', 'fallback', 'optional', 'nullable', 'rename', 'array', 'additionalProperties',
+  ];
   const mappings = buildNestedPropertyAccessors(mapping)
     .map((prop) => {
       if (exclude.includes(prop[prop.length - 1])) {
