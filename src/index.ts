@@ -379,6 +379,12 @@ export type Extraction = ExtractionArr | string[] | boolean | {
   [key: string]: Extraction,
 };
 
+class Rename {
+  constructor(public readonly to: string) {}
+}
+
+export const rename = (to: string): any => new Rename(to);
+
 export const extract = (body: any, extraction: Extraction): any => {
   const output: any = {};
 
@@ -386,9 +392,10 @@ export const extract = (body: any, extraction: Extraction): any => {
   if (body === null) return null;
 
   // for [...] and [{ ...mapping }]
-  const isArrMap = Array.isArray(extraction)
-    && extraction.length === 1
-    && typeof extraction[0] === 'object';
+  const isArrMap =
+    Array.isArray(extraction) &&
+    extraction.length === 1 &&
+    typeof extraction[0] === 'object';
 
   if (Array.isArray(body)) {
     if (isArrMap) {
@@ -406,7 +413,9 @@ export const extract = (body: any, extraction: Extraction): any => {
     if (Array.isArray(extractField)) {
       // this is when mapping is [{ bar: true }]
       // [{bar:1,baz:2},{bar:2,baz:3}] -> [{bar:1},{bar:2}]
-      const isObjectMapping = (extractField as any[]).some(v => (typeof v !== 'string'));
+      const isObjectMapping = (extractField as any[]).some(
+        v => typeof v !== 'string',
+      );
 
       if (isObjectMapping) {
         if (extractField.length !== 1) {
@@ -439,6 +448,8 @@ export const extract = (body: any, extraction: Extraction): any => {
       output[field] = body[field];
     } else if (extractField === false) {
       continue;
+    } else if (extractField instanceof Rename) {
+      output[extractField.to] = body[field];
     } else {
       // { foo: { bar: ... } } - recurse into foo
       output[field] = extract(body[field], extractField);

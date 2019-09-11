@@ -7,6 +7,7 @@ import {
   mapper,
   extract,
   structuredMapper,
+  rename,
 } from './index';
 
 describe('data type', () => {
@@ -882,5 +883,11 @@ describe('extract', () => {
   test('undefined', () => {
     expect(extract(undefined, { a: true })).toBe(undefined);
     expect(extract({ a: undefined }, { a: true })).toEqual({ a: undefined });
+  });
+
+  test('rename', () => {
+    expect(
+      extract({ foo: 'bar', bar: 'baz' }, { foo: rename('baz'), bar: true }),
+    ).toEqual({ baz: 'bar', bar: 'baz' });
   });
 });
