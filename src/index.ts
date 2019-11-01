@@ -82,15 +82,12 @@ export const mapper = <D>(
   const dataType = toDataType(data);
 
   if (mapping.custom) {
-    const funcs = mapping.custom.filter(([useThisMapping]) => (
-      useThisMapping(data, dataType, key, contextualKey)
-    ));
+    const funcs = mapping.custom.filter(([useThisMapping]) =>
+      useThisMapping(data, dataType, key, contextualKey),
+    );
 
     if (funcs.length) {
-      return funcs.reduce(
-        (acc, [, fn]) => fn(acc, dataType, key, contextualKey),
-        data,
-      );
+      return funcs.reduce((acc, [, fn]) => fn(acc, dataType, key, contextualKey), data);
     }
   }
 
@@ -111,13 +108,12 @@ export const mapper = <D>(
 
   switch (dataType) {
     case DataType.Array:
-
       // have to use Array.from because of array-like objects
-      return Array.from(data as any).map((val, i) => (
-        mapper(val, mapping, key, contextualKey ? `${contextualKey}[${i}]` : `[${i}]`)
-      ));
+      return Array.from(data as any).map((val, i) =>
+        mapper(val, mapping, key, contextualKey ? `${contextualKey}[${i}]` : `[${i}]`),
+      );
 
-    case DataType.Object:
+    case DataType.Object: {
       const output: any = {};
 
       if (data.constructor.name !== 'Object') {
@@ -127,15 +123,11 @@ export const mapper = <D>(
       }
 
       for (const [key, value] of Object.entries(data)) {
-        output[key] = mapper(
-          value,
-          mapping,
-          key,
-          contextualKey ? `${contextualKey}.${key}` : key,
-        );
+        output[key] = mapper(value, mapping, key, contextualKey ? `${contextualKey}.${key}` : key);
       }
 
       return output as D;
+    }
 
     case DataType.String:
     case DataType.Number:
@@ -160,7 +152,7 @@ const buildNestedPropertyAccessors = (
     return [];
   }
 
-  for (const [key, nested] of Object.entries(obj)) {
+  for (const [key] of Object.entries(obj)) {
     const nested = buildNestedPropertyAccessors(obj[key], exclude, ctx.concat(key));
 
     if (nested.length) {
@@ -173,13 +165,14 @@ const buildNestedPropertyAccessors = (
   return props;
 };
 
-const getProperty = (obj: any, accessor: string[]) => accessor.reduce((obj, property) => {
-  if (obj[property] !== undefined) {
-    return obj[property];
-  }
+const getProperty = (obj: any, accessor: string[]) =>
+  accessor.reduce((obj, property) => {
+    if (obj[property] !== undefined) {
+      return obj[property];
+    }
 
-  throw new Error(`@servall/mapper could not access property '${accessor.join('.')}'`);
-}, obj);
+    throw new Error(`@servall/mapper could not access property '${accessor.join('.')}'`);
+  }, obj);
 
 const setProperty = (obj: any, accessor: string[], value: any, createObjs = false) => {
   if (accessor.length === 1) {
@@ -198,73 +191,76 @@ const setProperty = (obj: any, accessor: string[], value: any, createObjs = fals
 export type StructuredMappingFunc<I, O = I> = (val: I, dataType: DataType) => O;
 
 export type StructuredMappingObject<I, O = I> =
-  {
-    map: StructuredMappingFunc<I, O>;
-    rename?: string;
-    array?: true;
-    optional?: never;
-    nullable?: never;
-    fallback?: never;
-    flatten?: never;
-    additionalProperties?: never;
-  } | {
-    map: StructuredMappingFunc<I, O>;
-    rename?: string;
-    optional: boolean;
-    nullable?: never;
-    fallback?: O;
-    array?: true;
-    flatten?: never;
-    additionalProperties?: never;
-  } | {
-    map: StructuredMappingFunc<I, O>;
-    rename?: string;
-    optional?: boolean;
-    nullable: boolean;
-    fallback?: O;
-    array?: true;
-    flatten?: never;
-    additionalProperties?: never;
-  } | {
-    flatten: StructuredMapping<I, O>;
-    map?: never;
-    rename?: never;
-    array?: never;
-    optional?: never;
-    nullable?: never;
-    fallback?: never;
-    additionalProperties?: never;
-  };
+  | {
+      map: StructuredMappingFunc<I, O>;
+      rename?: string;
+      array?: true;
+      optional?: never;
+      nullable?: never;
+      fallback?: never;
+      flatten?: never;
+      additionalProperties?: never;
+    }
+  | {
+      map: StructuredMappingFunc<I, O>;
+      rename?: string;
+      optional: boolean;
+      nullable?: never;
+      fallback?: O;
+      array?: true;
+      flatten?: never;
+      additionalProperties?: never;
+    }
+  | {
+      map: StructuredMappingFunc<I, O>;
+      rename?: string;
+      optional?: boolean;
+      nullable: boolean;
+      fallback?: O;
+      array?: true;
+      flatten?: never;
+      additionalProperties?: never;
+    }
+  | {
+      flatten: StructuredMapping<I, O>;
+      map?: never;
+      rename?: never;
+      array?: never;
+      optional?: never;
+      nullable?: never;
+      fallback?: never;
+      additionalProperties?: never;
+    };
 
-export type StructuredMappingStructure<I, O = I> =
-  {
-    [key: string]: StructuredMapping<any> | undefined;
-    additionalProperties?: boolean;
+export type StructuredMappingStructure<I, O = I> = {
+  [key: string]: StructuredMapping<any> | undefined;
+  additionalProperties?: boolean;
 
-    // disallowed keys, because they're special in StructuredMappingObject
-    map?: never;
-    rename?: never;
-    array?: never;
-    optional?: never;
-    nullable?: never;
-    fallback?: never;
-    flatten?: never;
-  };
+  // disallowed keys, because they're special in StructuredMappingObject
+  map?: never;
+  rename?: never;
+  array?: never;
+  optional?: never;
+  nullable?: never;
+  fallback?: never;
+  flatten?: never;
+};
 
 export type StructuredMappingOptions<I, O = I> =
-  boolean |
-  StructuredMappingFunc<I, O> |
-  StructuredMappingObject<I, O> |
-  StructuredMappingStructure<I, O>;
+  | boolean
+  | StructuredMappingFunc<I, O>
+  | StructuredMappingObject<I, O>
+  | StructuredMappingStructure<I, O>;
 
 export type StructuredMapping<I = any, O = I> =
-  [
-    boolean |
-    // using O[0] to extract the type of array elements that it maps to
-    StructuredMappingFunc<I, O extends any[] ? O[0] : never> |
-    StructuredMappingStructure<I, O extends any[] ? O[0] : never>
-  ] |
-  StructuredMappingOptions<I, O>;
+  | [
+
+        | boolean
+        // using O[0] to extract the type of array elements that it maps to
+        | StructuredMappingFunc<I, O extends any[] ? O[0] : never>
+        | StructuredMappingStructure<I, O extends any[] ? O[0] : never>,
+    ]
+  | StructuredMappingOptions<I, O>;
 
 export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D, O>): O => {
   if (typeof mapping === 'function') {
@@ -276,7 +272,7 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
   }
 
   if (mapping === false) {
-    return undefined as unknown as O;
+    return (undefined as unknown) as O;
   }
 
   if (Array.isArray(mapping)) {
@@ -292,7 +288,7 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
 
   if ('map' in mapping) {
     if (data === undefined && 'optional' in mapping && mapping.optional) {
-      return undefined as unknown as O;
+      return (undefined as unknown) as O;
     }
 
     if (data === null && 'nullable' in mapping && mapping.nullable) {
@@ -300,7 +296,7 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
         return mapping.fallback as any;
       }
 
-      return null as unknown as O;
+      return (null as unknown) as O;
     }
 
     if (mapping.array) {
@@ -308,8 +304,9 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
         throw new Error('received an array mapping, but input data was not');
       }
 
-      return (data as unknown as any[])
-        .map(v => (mapping.map as StructuredMappingFunc<D, O>)(v, toDataType(v))) as unknown as O;
+      return (((data as unknown) as any[]).map(v =>
+        (mapping.map as StructuredMappingFunc<D, O>)(v, toDataType(v)),
+      ) as unknown) as O;
     }
 
     return (mapping.map as StructuredMappingFunc<D, O>)(data, toDataType(data));
@@ -323,10 +320,16 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
 
   // get mappings without the trailing .map or .optional
   const exclude = [
-    'map', 'fallback', 'optional', 'nullable', 'rename', 'array', 'additionalProperties',
+    'map',
+    'fallback',
+    'optional',
+    'nullable',
+    'rename',
+    'array',
+    'additionalProperties',
   ];
   const mappings = buildNestedPropertyAccessors(mapping)
-    .map((prop) => {
+    .map(prop => {
       if (exclude.includes(prop[prop.length - 1])) {
         return prop.slice(0, -1);
       }
@@ -341,43 +344,49 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
     Object.assign(output, data);
   }
 
-  mappings.map(prop => [prop, getProperty(mapping, prop)]).forEach(([prop, mapping]) => {
-    let input;
+  mappings
+    .map(prop => [prop, getProperty(mapping, prop)])
+    .forEach(([prop, mapping]) => {
+      let input;
 
-    try {
-      // when getting the property, we ignore 'flatten'
-      input = getProperty(data, prop.filter((p: string) => p !== 'flatten'));
-    } catch (err) {
-      if (!mapping.optional) {
-        throw err;
-      } else if ('fallback' in mapping) {
-        setProperty(output, prop, mapping.fallback, true);
+      try {
+        // when getting the property, we ignore 'flatten'
+        input = getProperty(data, prop.filter((p: string) => p !== 'flatten'));
+      } catch (err) {
+        if (!mapping.optional) {
+          throw err;
+        } else if ('fallback' in mapping) {
+          setProperty(output, prop, mapping.fallback, true);
+        }
+
+        return;
       }
 
-      return;
-    }
+      if (mapping.rename) {
+        prop.splice(-1, 1, mapping.rename);
+      }
 
-    if (mapping.rename) {
-      prop.splice(-1, 1, mapping.rename);
-    }
+      // when setting the property, we fold 'flatten' upwards
+      const destProp = prop.reduce((acc: string[], p: string) => {
+        if (p === 'flatten') return acc.slice(0, -1);
+        return acc.concat(p);
+      }, []);
 
-    // when setting the property, we fold 'flatten' upwards
-    const destProp = prop.reduce((acc: string[], p: string) => {
-      if (p === 'flatten') return acc.slice(0, -1);
-      return acc.concat(p);
-    }, []);
-
-    setProperty(output, destProp, structuredMapper(input, mapping), true);
-  });
+      setProperty(output, destProp, structuredMapper(input, mapping), true);
+    });
 
   return output as O;
 };
 
 export interface ExtractionArr extends Array<Extraction> {}
 
-export type Extraction = ExtractionArr | string[] | boolean | {
-  [key: string]: Extraction,
-};
+export type Extraction =
+  | ExtractionArr
+  | string[]
+  | boolean
+  | {
+      [key: string]: Extraction;
+    };
 
 class Rename {
   constructor(public readonly to: string) {}
@@ -393,9 +402,7 @@ export const extract = (body: any, extraction: Extraction): any => {
 
   // for [...] and [{ ...mapping }]
   const isArrMap =
-    Array.isArray(extraction) &&
-    extraction.length === 1 &&
-    typeof extraction[0] === 'object';
+    Array.isArray(extraction) && extraction.length === 1 && typeof extraction[0] === 'object';
 
   if (Array.isArray(body)) {
     if (isArrMap) {
@@ -413,9 +420,7 @@ export const extract = (body: any, extraction: Extraction): any => {
     if (Array.isArray(extractField)) {
       // this is when mapping is [{ bar: true }]
       // [{bar:1,baz:2},{bar:2,baz:3}] -> [{bar:1},{bar:2}]
-      const isObjectMapping = (extractField as any[]).some(
-        v => typeof v !== 'string',
-      );
+      const isObjectMapping = (extractField as any[]).some(v => typeof v !== 'string');
 
       if (isObjectMapping) {
         if (extractField.length !== 1) {

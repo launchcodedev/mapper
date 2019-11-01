@@ -11,36 +11,46 @@
     "url": "https://www.servalldev.com"
   },
   "scripts": {
-    "build": "rm -rf dist && tsc",
+    "build": "tsc -b",
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "lint": "dev lint",
+    "fix": "dev lint --fix",
     "test": "jest",
-    "lint": "tslint src/**/*.ts src/*.ts",
-    "fix": "yarn lint --fix",
-    "prepublishOnly": "yarn build"
+    "prepublishOnly": "yarn clean && yarn build"
   },
   "devDependencies": {
-    "@types/jest": "23",
+    "@commitlint/cli": "8",
+    "@servall/commitlint": "1",
+    "@servall/dev": "0.0.10-beta.13",
+    "@servall/eslint-config": "0.1",
+    "@servall/jest": "0.1",
+    "@servall/prettier": "0.1",
+    "@servall/ts": "0.1",
+    "@servall/tsconfig": "0.1",
+    "@types/jest": "24",
     "@types/moment": "2",
     "@types/node": "8",
     "benchmark": "2",
-    "jest": "23",
+    "husky": "3",
+    "jest": "24",
     "moment": "2",
-    "ts-jest": "23",
-    "tslint": "5",
-    "tslint-config-airbnb": "5",
-    "tslint-eslint-rules": "5",
     "typescript": "3"
   },
+  "prettier": "@servall/prettier",
+  "eslintConfig": {
+    "extends": "@servall"
+  },
   "jest": {
-    "preset": "ts-jest",
-    "testMatch": null,
-    "testRegex": "(tests/.*|src/.*\\.test)\\.(ts|js)$",
-    "testPathIgnorePatterns": [
-      "node_modules",
-      ".yarn-cache"
-    ],
-    "modulePathIgnorePatterns": [
-      "node_modules",
-      ".yarn-cache"
+    "preset": "@servall/jest"
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "commitlint": {
+    "extends": [
+      "@servall/commitlint"
     ]
   }
 }

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import * as moment from 'moment';
 import {
   DataType,
@@ -12,7 +13,6 @@ import {
 
 describe('data type', () => {
   // these do bad things like new String()
-  // tslint:disable
   test('string', () => {
     expect(toDataType('')).toBe(DataType.String);
     expect(toDataType('string')).toBe(DataType.String);
@@ -38,7 +38,7 @@ describe('data type', () => {
 
   test('function', () => {
     expect(toDataType(() => {})).toBe(DataType.Function);
-    expect(toDataType(function(){})).toBe(DataType.Function);
+    expect(toDataType(function() {})).toBe(DataType.Function);
     expect(toDataType(parseFloat)).toBe(DataType.Function);
     expect(toDataType([].map)).toBe(DataType.Function);
   });
@@ -53,7 +53,7 @@ describe('data type', () => {
   });
 
   test('date', () => {
-    expect(toDataType(new Date)).toBe(DataType.Date);
+    expect(toDataType(new Date())).toBe(DataType.Date);
   });
 
   test('array', () => {
@@ -65,15 +65,15 @@ describe('data type', () => {
 
   test('object', () => {
     expect(toDataType({})).toBe(DataType.Object);
-    expect(toDataType(new Map)).toBe(DataType.Object);
-    expect(toDataType(new Object)).toBe(DataType.Object);
+    expect(toDataType(new Map())).toBe(DataType.Object);
+    expect(toDataType(new Object())).toBe(DataType.Object);
 
-    (function (this: any, ...args: any) {
+    (function(this: any, ...args: any) {
       expect(toDataType(this)).toBe(DataType.Object);
       // arguments is array-like, args is an array
       expect(toDataType(arguments)).toBe(DataType.Object);
       expect(toDataType(args)).toBe(DataType.Array);
-    }).call({}, 1, 2, 3);
+    }.call({}, 1, 2, 3));
   });
   // tslint:enable
 });
@@ -81,12 +81,23 @@ describe('data type', () => {
 describe('mapper', () => {
   test('mapper without options', () => {
     const objs: any[] = [
-      0, 1, -1, Infinity, -Infinity,
-      null, undefined,
-      '', 'string', String('str'),
-      new Date(), new Date('1995-12-17T03:24:00'),
-      () => {}, function () {},
-      {}, { foo: 'bar' }, { bar: { baz: 'foo' }, foo: 'baz' },
+      0,
+      1,
+      -1,
+      Infinity,
+      -Infinity,
+      null,
+      undefined,
+      '',
+      'string',
+      String('str'),
+      new Date(),
+      new Date('1995-12-17T03:24:00'),
+      () => {},
+      function() {},
+      {},
+      { foo: 'bar' },
+      { bar: { baz: 'foo' }, foo: 'baz' },
     ];
 
     for (const obj of objs) {
@@ -132,9 +143,7 @@ describe('mapper', () => {
   });
 
   test('array mapping', () => {
-    const objs: [any, any][] = [
-      [[0, 1, 2, 3], [0, 2, 4, 6]],
-    ];
+    const objs: [any, any][] = [[[0, 1, 2, 3], [0, 2, 4, 6]]];
 
     const mapping: Mapping = {
       [DataType.Number]: num => num * 2,
@@ -153,7 +162,10 @@ describe('mapper', () => {
     ];
 
     const mapping: Mapping = {
-      [DataType.Date]: (date) => { date.setFullYear(2000); return date; },
+      [DataType.Date]: date => {
+        date.setFullYear(2000);
+        return date;
+      },
     };
 
     for (const [input, output] of objs) {
@@ -164,18 +176,9 @@ describe('mapper', () => {
   test('custom mapper', () => {
     const mapping: Mapping = {
       custom: [
-        [
-          (_, dataType) => dataType === DataType.Number,
-          data => data * 2,
-        ],
-        [
-          (_, __, key) => key === 'foo',
-          data => data / 2,
-        ],
-        [
-          (_, __, ___, cKey) => cKey === 'bar.baz',
-          data => data * 4,
-        ],
+        [(_, dataType) => dataType === DataType.Number, data => data * 2],
+        [(_, __, key) => key === 'foo', data => data / 2],
+        [(_, __, ___, cKey) => cKey === 'bar.baz', data => data * 4],
       ],
     };
 
@@ -219,13 +222,8 @@ describe('mapper', () => {
 
   test('mapping key', () => {
     const mapping: Mapping = {
-      [DataType.String]: (str, key) => key ? `${key}: ${str}` : str,
-      custom: [
-        [
-          (_, __, key) => key === '$key',
-          data => `KEY:${data}`,
-        ],
-      ],
+      [DataType.String]: (str, key) => (key ? `${key}: ${str}` : str),
+      custom: [[(_, __, key) => key === '$key', data => `KEY:${data}`]],
     };
 
     expect(mapper('raw', mapping)).toEqual('raw');
@@ -298,18 +296,23 @@ describe('mapper', () => {
   test('class object', () => {
     const spy = jest.spyOn(console, 'warn');
 
-    class Testing { x = 1; }
+    class Testing {
+      x = 1;
+    }
     expect(mapper(new Testing(), {})).toEqual({ x: 1 });
     expect(mapper(new Map(), {})).toEqual({});
     expect(mapper(new Set(), {})).toEqual({});
 
     expect(spy).toHaveBeenCalledTimes(3);
-    expect(spy)
-      .toHaveBeenCalledWith('Iterating over a Testing, which will lose your class instance type');
-    expect(spy)
-      .toHaveBeenCalledWith('Iterating over a Map, which will lose your class instance type');
-    expect(spy)
-      .toHaveBeenCalledWith('Iterating over a Set, which will lose your class instance type');
+    expect(spy).toHaveBeenCalledWith(
+      'Iterating over a Testing, which will lose your class instance type',
+    );
+    expect(spy).toHaveBeenCalledWith(
+      'Iterating over a Map, which will lose your class instance type',
+    );
+    expect(spy).toHaveBeenCalledWith(
+      'Iterating over a Set, which will lose your class instance type',
+    );
 
     spy.mockRestore();
   });
@@ -325,11 +328,11 @@ describe('structuredMapper', () => {
       },
     };
 
-    expect(structuredMapper({ foo: { bar: 12 } }, mapping))
-      .toEqual({ foo: { bar: 'replaced' } });
+    expect(structuredMapper({ foo: { bar: 12 } }, mapping)).toEqual({ foo: { bar: 'replaced' } });
 
-    expect(structuredMapper({ foo: { bar: 'baz' } }, mapping))
-      .toEqual({ foo: { bar: 'replaced' } });
+    expect(structuredMapper({ foo: { bar: 'baz' } }, mapping)).toEqual({
+      foo: { bar: 'replaced' },
+    });
   });
 
   test('false mapping', () => {
@@ -337,8 +340,7 @@ describe('structuredMapper', () => {
       foo: false,
     };
 
-    expect(structuredMapper({ foo: { bar: 12 } }, mapping))
-      .toEqual({});
+    expect(structuredMapper({ foo: { bar: 12 } }, mapping)).toEqual({});
   });
 
   test('optional mapping', () => {
@@ -353,20 +355,15 @@ describe('structuredMapper', () => {
       },
     };
 
-    expect(structuredMapper({ foo: { bar: 12 } }, mapping))
-      .toEqual({ foo: { bar: 'replaced' } });
+    expect(structuredMapper({ foo: { bar: 12 } }, mapping)).toEqual({ foo: { bar: 'replaced' } });
 
-    expect(structuredMapper({ foo: {} }, mapping))
-      .toEqual({});
+    expect(structuredMapper({ foo: {} }, mapping)).toEqual({});
 
-    expect(structuredMapper({}, mapping))
-      .toEqual({});
+    expect(structuredMapper({}, mapping)).toEqual({});
 
-    expect(structuredMapper({ foo: { bar: [] } }, mapping))
-      .toEqual({ foo: { bar: 'replaced' } });
+    expect(structuredMapper({ foo: { bar: [] } }, mapping)).toEqual({ foo: { bar: 'replaced' } });
 
-    expect(structuredMapper({ foo: [] }, mapping))
-      .toEqual({});
+    expect(structuredMapper({ foo: [] }, mapping)).toEqual({});
   });
 
   test('optional with fallback', () => {
@@ -382,20 +379,15 @@ describe('structuredMapper', () => {
       },
     };
 
-    expect(structuredMapper({ foo: { bar: 12 } }, mapping))
-      .toEqual({ foo: { bar: 'replaced' } });
+    expect(structuredMapper({ foo: { bar: 12 } }, mapping)).toEqual({ foo: { bar: 'replaced' } });
 
-    expect(structuredMapper({ foo: {} }, mapping))
-      .toEqual({ foo: { bar: 'fallback' } });
+    expect(structuredMapper({ foo: {} }, mapping)).toEqual({ foo: { bar: 'fallback' } });
 
-    expect(structuredMapper({}, mapping))
-      .toEqual({ foo: { bar: 'fallback' } });
+    expect(structuredMapper({}, mapping)).toEqual({ foo: { bar: 'fallback' } });
 
-    expect(structuredMapper({ foo: { bar: [] } }, mapping))
-      .toEqual({ foo: { bar: 'replaced' } });
+    expect(structuredMapper({ foo: { bar: [] } }, mapping)).toEqual({ foo: { bar: 'replaced' } });
 
-    expect(structuredMapper({ foo: [] }, mapping))
-      .toEqual({ foo: { bar: 'fallback' } });
+    expect(structuredMapper({ foo: [] }, mapping)).toEqual({ foo: { bar: 'fallback' } });
   });
 
   test('nullable mapping', () => {
@@ -410,11 +402,9 @@ describe('structuredMapper', () => {
       },
     };
 
-    expect(structuredMapper({ foo: { bar: null } }, mapping))
-      .toEqual({ foo: { bar: null } });
+    expect(structuredMapper({ foo: { bar: null } }, mapping)).toEqual({ foo: { bar: null } });
 
-    expect(structuredMapper({ foo: { bar: 1 } }, mapping))
-      .toEqual({ foo: { bar: 'replaced' } });
+    expect(structuredMapper({ foo: { bar: 1 } }, mapping)).toEqual({ foo: { bar: 'replaced' } });
   });
 
   test('nullable with fallback', () => {
@@ -430,11 +420,9 @@ describe('structuredMapper', () => {
       },
     };
 
-    expect(structuredMapper({ foo: { bar: 12 } }, mapping))
-      .toEqual({ foo: { bar: 'replaced' } });
+    expect(structuredMapper({ foo: { bar: 12 } }, mapping)).toEqual({ foo: { bar: 'replaced' } });
 
-    expect(structuredMapper({ foo: { bar: null } }, mapping))
-      .toEqual({ foo: { bar: 'fallback' } });
+    expect(structuredMapper({ foo: { bar: null } }, mapping)).toEqual({ foo: { bar: 'fallback' } });
   });
 
   test('nullable and optional mapping', () => {
@@ -451,17 +439,13 @@ describe('structuredMapper', () => {
       },
     };
 
-    expect(structuredMapper({ foo: { bar: 12 } }, mapping))
-      .toEqual({ foo: { bar: 'replaced' } });
+    expect(structuredMapper({ foo: { bar: 12 } }, mapping)).toEqual({ foo: { bar: 'replaced' } });
 
-    expect(structuredMapper({ foo: {} }, mapping))
-      .toEqual({ foo: { bar: 'fallback' } });
+    expect(structuredMapper({ foo: {} }, mapping)).toEqual({ foo: { bar: 'fallback' } });
 
-    expect(structuredMapper({}, mapping))
-      .toEqual({ foo: { bar: 'fallback' } });
+    expect(structuredMapper({}, mapping)).toEqual({ foo: { bar: 'fallback' } });
 
-    expect(structuredMapper({ foo: { bar: null } }, mapping))
-      .toEqual({ foo: { bar: 'fallback' } });
+    expect(structuredMapper({ foo: { bar: null } }, mapping)).toEqual({ foo: { bar: 'fallback' } });
   });
 
   test('property renaming', () => {
@@ -481,20 +465,21 @@ describe('structuredMapper', () => {
       },
     };
 
-    expect(structuredMapper({ bat: 3, foo: { bar: 12 } }, mapping))
-      .toEqual({ loo: 3, foo: { bat: 'replaced' } });
+    expect(structuredMapper({ bat: 3, foo: { bar: 12 } }, mapping)).toEqual({
+      loo: 3,
+      foo: { bat: 'replaced' },
+    });
 
-    expect(structuredMapper({ bat: 3, foo: {} }, mapping))
-      .toEqual({ loo: 3 });
+    expect(structuredMapper({ bat: 3, foo: {} }, mapping)).toEqual({ loo: 3 });
 
-    expect(structuredMapper({ bat: 3 }, mapping))
-      .toEqual({ loo: 3 });
+    expect(structuredMapper({ bat: 3 }, mapping)).toEqual({ loo: 3 });
 
-    expect(structuredMapper({ bat: 3, foo: { bar: [] } }, mapping))
-      .toEqual({ loo: 3, foo: { bat: 'replaced' } });
+    expect(structuredMapper({ bat: 3, foo: { bar: [] } }, mapping)).toEqual({
+      loo: 3,
+      foo: { bat: 'replaced' },
+    });
 
-    expect(structuredMapper({ bat: 3, foo: [] }, mapping))
-      .toEqual({ loo: 3 });
+    expect(structuredMapper({ bat: 3, foo: [] }, mapping)).toEqual({ loo: 3 });
   });
 
   test('array mapping', () => {
@@ -513,14 +498,15 @@ describe('structuredMapper', () => {
       },
     };
 
-    expect(structuredMapper({ foo: { bar: [] } }, mapping))
-      .toEqual({ foo: { bar: [] } });
+    expect(structuredMapper({ foo: { bar: [] } }, mapping)).toEqual({ foo: { bar: [] } });
 
-    expect(structuredMapper({ foo: { bar: [0, 1, 2, 3, 4, 5] } }, mapping))
-      .toEqual({ foo: { bar: [0, 2, 4, 6, 8, 10] } });
+    expect(structuredMapper({ foo: { bar: [0, 1, 2, 3, 4, 5] } }, mapping)).toEqual({
+      foo: { bar: [0, 2, 4, 6, 8, 10] },
+    });
 
-    expect(structuredMapper({ foo: { bar: [1, '2', 3] } }, mapping))
-      .toEqual({ foo: { bar: [2, 'unknown', 6] } });
+    expect(structuredMapper({ foo: { bar: [1, '2', 3] } }, mapping)).toEqual({
+      foo: { bar: [2, 'unknown', 6] },
+    });
   });
 
   test('complex mapping', () => {
@@ -553,58 +539,83 @@ describe('structuredMapper', () => {
     expect(() => structuredMapper({ top: 1 }, mapping)).toThrow();
     expect(() => structuredMapper({ arr: [] }, mapping)).toThrow();
 
-    expect(structuredMapper({
-      top: 1,
-      arr: [5, 10],
-    }, mapping)).toEqual({
+    expect(
+      structuredMapper(
+        {
+          top: 1,
+          arr: [5, 10],
+        },
+        mapping,
+      ),
+    ).toEqual({
       top: 11,
       arr: [5 ** 10, 10 ** 10],
     });
 
-    expect(structuredMapper({
-      top: 1,
-      arr: [5, 10],
-      foo: { nest: 1 },
-    }, mapping)).toEqual({
+    expect(
+      structuredMapper(
+        {
+          top: 1,
+          arr: [5, 10],
+          foo: { nest: 1 },
+        },
+        mapping,
+      ),
+    ).toEqual({
       top: 11,
       arr: [5 ** 10, 10 ** 10],
       foo: { nest: 10 },
     });
 
-    expect(structuredMapper({
-      top: 1,
-      arr: [5, 10],
-      foo: {
-        more: {},
-      },
-    }, mapping)).toEqual({
+    expect(
+      structuredMapper(
+        {
+          top: 1,
+          arr: [5, 10],
+          foo: {
+            more: {},
+          },
+        },
+        mapping,
+      ),
+    ).toEqual({
       top: 11,
       arr: [5 ** 10, 10 ** 10],
     });
 
-    expect(structuredMapper({
-      top: 1,
-      arr: [5, 10],
-      foo: {
-        more: {
-          more: [],
+    expect(
+      structuredMapper(
+        {
+          top: 1,
+          arr: [5, 10],
+          foo: {
+            more: {
+              more: [],
+            },
+          },
         },
-      },
-    }, mapping)).toEqual({
+        mapping,
+      ),
+    ).toEqual({
       top: 11,
       arr: [5 ** 10, 10 ** 10],
       foo: { more: { more: [] } },
     });
 
-    expect(structuredMapper({
-      top: 1,
-      arr: [5, 10],
-      foo: {
-        more: {
-          more: [1, 'dfkj', []],
+    expect(
+      structuredMapper(
+        {
+          top: 1,
+          arr: [5, 10],
+          foo: {
+            more: {
+              more: [1, 'dfkj', []],
+            },
+          },
         },
-      },
-    }, mapping)).toEqual({
+        mapping,
+      ),
+    ).toEqual({
       top: 11,
       arr: [5 ** 10, 10 ** 10],
       foo: { more: { more: [1, 'str', []] } },
@@ -620,13 +631,18 @@ describe('structuredMapper', () => {
       },
     };
 
-    expect(structuredMapper({
-      foo: {
-        bar: [{ id: 1, b: 2 }, { id: 2, c: 3 }, { id: 3 }, { id: 4, a: 1 }],
-        baz: [],
-        bat: [],
-      },
-    }, mapping)).toEqual({
+    expect(
+      structuredMapper(
+        {
+          foo: {
+            bar: [{ id: 1, b: 2 }, { id: 2, c: 3 }, { id: 3 }, { id: 4, a: 1 }],
+            baz: [],
+            bat: [],
+          },
+        },
+        mapping,
+      ),
+    ).toEqual({
       foo: {
         bar: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }],
         baz: [],
@@ -634,13 +650,18 @@ describe('structuredMapper', () => {
       },
     });
 
-    expect(structuredMapper({
-      foo: {
-        bar: [],
-        baz: [1, '2', 3, '4'],
-        bat: [1, 2, 3, 4],
-      },
-    }, mapping)).toEqual({
+    expect(
+      structuredMapper(
+        {
+          foo: {
+            bar: [],
+            baz: [1, '2', 3, '4'],
+            bat: [1, 2, 3, 4],
+          },
+        },
+        mapping,
+      ),
+    ).toEqual({
       foo: {
         bar: [],
         baz: [1, '2', 3, '4'],
@@ -654,8 +675,9 @@ describe('structuredMapper', () => {
   test('array shorthand array', () => {
     const mapping: StructuredMapping = [{ foo: true }];
 
-    expect(structuredMapper<{ foo: string, bar: string }[]>([{ foo: 'bar', bar: 'baz' }], mapping))
-      .toEqual([{ foo: 'bar' }]);
+    expect(
+      structuredMapper<{ foo: string; bar: string }[]>([{ foo: 'bar', bar: 'baz' }], mapping),
+    ).toEqual([{ foo: 'bar' }]);
   });
 
   test('bypass replacement', () => {
@@ -669,49 +691,83 @@ describe('structuredMapper', () => {
       bat: true,
     };
 
-    expect(structuredMapper({ foo: { bar: 12, baz: 13 }, bat: 44 }, mapping))
-      .toEqual({ foo: { bar: 'replaced', baz: 13 }, bat: 44 });
+    expect(structuredMapper({ foo: { bar: 12, baz: 13 }, bat: 44 }, mapping)).toEqual({
+      foo: { bar: 'replaced', baz: 13 },
+      bat: 44,
+    });
 
-    expect(structuredMapper({ foo: { bar: 'baz', baz: 13 }, bat: 44 }, mapping))
-      .toEqual({ foo: { bar: 'replaced', baz: 13 }, bat: 44 });
+    expect(structuredMapper({ foo: { bar: 'baz', baz: 13 }, bat: 44 }, mapping)).toEqual({
+      foo: { bar: 'replaced', baz: 13 },
+      bat: 44,
+    });
   });
 
   test('flatten', () => {
-    expect(structuredMapper({
-      a: { b: 2 },
-    }, {
-      a: { flatten: {} },
-    })).toEqual({});
+    expect(
+      structuredMapper(
+        {
+          a: { b: 2 },
+        },
+        {
+          a: { flatten: {} },
+        },
+      ),
+    ).toEqual({});
 
-    expect(structuredMapper({
-      a: { b: 2 },
-    }, {
-      a: { flatten: { b: true } },
-    })).toEqual({ b: 2 });
+    expect(
+      structuredMapper(
+        {
+          a: { b: 2 },
+        },
+        {
+          a: { flatten: { b: true } },
+        },
+      ),
+    ).toEqual({ b: 2 });
 
-    expect(structuredMapper({
-      a: { b: 2 },
-    }, {
-      a: { flatten: { b: { optional: true, map: (v: any) => v } } },
-    })).toEqual({ b: 2 });
+    expect(
+      structuredMapper(
+        {
+          a: { b: 2 },
+        },
+        {
+          a: { flatten: { b: { optional: true, map: (v: any) => v } } },
+        },
+      ),
+    ).toEqual({ b: 2 });
 
-    expect(structuredMapper({
-      a: {},
-    }, {
-      a: { flatten: { b: { optional: true, map: (v: any) => v } } },
-    })).toEqual({});
+    expect(
+      structuredMapper(
+        {
+          a: {},
+        },
+        {
+          a: { flatten: { b: { optional: true, map: (v: any) => v } } },
+        },
+      ),
+    ).toEqual({});
 
-    expect(structuredMapper({
-      a: { b: 2 },
-    }, {
-      a: { flatten: { b: { rename: 'bb', map: (v: any) => v } } },
-    })).toEqual({ bb: 2 });
+    expect(
+      structuredMapper(
+        {
+          a: { b: 2 },
+        },
+        {
+          a: { flatten: { b: { rename: 'bb', map: (v: any) => v } } },
+        },
+      ),
+    ).toEqual({ bb: 2 });
 
-    expect(structuredMapper({
-      a: { b: { bb: 2 } },
-    }, {
-      a: { flatten: { b: { flatten: true } } },
-    })).toEqual({ bb: 2 });
+    expect(
+      structuredMapper(
+        {
+          a: { b: { bb: 2 } },
+        },
+        {
+          a: { flatten: { b: { flatten: true } } },
+        },
+      ),
+    ).toEqual({ bb: 2 });
   });
 
   test('undefined with optional mapping', () => {
@@ -740,10 +796,12 @@ describe('structuredMapper', () => {
       bar: 'baz',
     };
 
-    expect(structuredMapper(input2, {
-      foo: false,
-      additionalProperties: true,
-    })).toEqual({ bar: 'baz' });
+    expect(
+      structuredMapper(input2, {
+        foo: false,
+        additionalProperties: true,
+      }),
+    ).toEqual({ bar: 'baz' });
 
     const input3 = {
       foo: 'bar',
@@ -751,11 +809,13 @@ describe('structuredMapper', () => {
       bat: 12,
     };
 
-    expect(structuredMapper(input3, {
-      foo: false,
-      bat: v => v * 2,
-      additionalProperties: true,
-    })).toEqual({
+    expect(
+      structuredMapper(input3, {
+        foo: false,
+        bat: v => v * 2,
+        additionalProperties: true,
+      }),
+    ).toEqual({
       bar: 'baz',
       bat: 24,
     });
@@ -770,12 +830,14 @@ describe('structuredMapper', () => {
       },
     };
 
-    expect(structuredMapper(input4, {
-      bar: {
-        foo: true,
-        additionalProperties: true,
-      },
-    })).toEqual({
+    expect(
+      structuredMapper(input4, {
+        bar: {
+          foo: true,
+          additionalProperties: true,
+        },
+      }),
+    ).toEqual({
       bar: {
         foo: 'bar',
         bar: {
@@ -784,13 +846,15 @@ describe('structuredMapper', () => {
       },
     });
 
-    expect(structuredMapper(input4, {
-      bar: {
+    expect(
+      structuredMapper(input4, {
         bar: {
-          additionalProperties: true,
+          bar: {
+            additionalProperties: true,
+          },
         },
-      },
-    })).toEqual({
+      }),
+    ).toEqual({
       bar: {
         bar: {
           foo: 'bar',
@@ -816,12 +880,8 @@ describe('extract', () => {
   });
 
   test('array', () => {
-    expect(extract({ foo: [{ a:1, b:1 }, { b:2 }, { a:3 }] }, { foo: [{ b: true }] })).toEqual({
-      foo: [
-        { b:1 },
-        { b:2 },
-        {},
-      ],
+    expect(extract({ foo: [{ a: 1, b: 1 }, { b: 2 }, { a: 3 }] }, { foo: [{ b: true }] })).toEqual({
+      foo: [{ b: 1 }, { b: 2 }, {}],
     });
 
     expect(extract([1, 2, 3], true)).toEqual([1, 2, 3]);
@@ -851,19 +911,18 @@ describe('extract', () => {
     const extraction = {
       firstName: true,
       lastName: true,
-      permissions: [{
-        role: true,
-        authority: ['access'],
-      }],
+      permissions: [
+        {
+          role: true,
+          authority: ['access'],
+        },
+      ],
     };
 
     const expected = {
       firstName: 'Bob',
       lastName: 'Albert',
-      permissions: [
-        { role: 'admin', authority: { access: 33 } },
-        { role: 'user' },
-      ],
+      permissions: [{ role: 'admin', authority: { access: 33 } }, { role: 'user' }],
     };
 
     expect(extract(response, extraction)).toEqual(expected);
@@ -871,8 +930,9 @@ describe('extract', () => {
 
   test('recurse', () => {
     expect(extract({}, { foo: { bar: { baz: true } } })).toEqual({});
-    expect(extract({ foo: { bar: { baz: 1 } } }, { foo: { bar: { baz: true } } }))
-      .toEqual({ foo: { bar: { baz: 1 } } });
+    expect(extract({ foo: { bar: { baz: 1 } } }, { foo: { bar: { baz: true } } })).toEqual({
+      foo: { bar: { baz: 1 } },
+    });
   });
 
   test('null', () => {
@@ -886,8 +946,9 @@ describe('extract', () => {
   });
 
   test('rename', () => {
-    expect(
-      extract({ foo: 'bar', bar: 'baz' }, { foo: rename('baz'), bar: true }),
-    ).toEqual({ baz: 'bar', bar: 'baz' });
+    expect(extract({ foo: 'bar', bar: 'baz' }, { foo: rename('baz'), bar: true })).toEqual({
+      baz: 'bar',
+      bar: 'baz',
+    });
   });
 });
