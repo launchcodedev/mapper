@@ -9,7 +9,7 @@ const mapping: Mapping = {
     [
       (data, dataType) => {
         if (dataType === DataType.String) {
-          return moment(data).isValid();
+          return moment(data, moment.ISO_8601).isValid();
         }
 
         return dataType === DataType.Date || moment.isMoment(data);
