@@ -382,6 +382,8 @@ export interface ExtractionArr extends Array<Extraction> {}
 
 export type Extraction =
   | ExtractionArr
+  | Rename
+  | Transform
   | string[]
   | boolean
   | {
@@ -392,7 +394,12 @@ class Rename {
   constructor(public readonly to: string) {}
 }
 
+class Transform {
+  constructor(public readonly fn: (from: any) => any) {}
+}
+
 export const rename = (to: string): any => new Rename(to);
+export const transform = (fn: (from: any) => any): any => new Transform(fn);
 
 export const extract = (body: any, extraction: Extraction): any => {
   const output: any = {};
@@ -455,6 +462,8 @@ export const extract = (body: any, extraction: Extraction): any => {
       continue;
     } else if (extractField instanceof Rename) {
       output[extractField.to] = body[field];
+    } else if (extractField instanceof Transform) {
+      output[field] = extractField.fn(body[field]);
     } else {
       // { foo: { bar: ... } } - recurse into foo
       output[field] = extract(body[field], extractField);

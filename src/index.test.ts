@@ -9,6 +9,7 @@ import {
   extract,
   structuredMapper,
   rename,
+  transform,
 } from './index';
 
 describe('data type', () => {
@@ -948,6 +949,13 @@ describe('extract', () => {
   test('rename', () => {
     expect(extract({ foo: 'bar', bar: 'baz' }, { foo: rename('baz'), bar: true })).toEqual({
       baz: 'bar',
+      bar: 'baz',
+    });
+  });
+
+  test('transform', () => {
+    expect(extract({ foo: 'bar', bar: 'baz' }, { foo: transform(v => v + 1), bar: true })).toEqual({
+      foo: 'bar1',
       bar: 'baz',
     });
   });
