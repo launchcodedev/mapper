@@ -1,3 +1,5 @@
+/* eslint-disable max-classes-per-file */
+
 export enum DataType {
   String,
   Number,
