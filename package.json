@@ -1,14 +1,14 @@
 {
-  "name": "@servall/mapper",
+  "name": "@lcdev/mapper",
   "description": "Simple object mapping with visitor support",
   "version": "0.1.14-dev",
   "license": "UNLICENSED",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": {
-    "name": "Servall Development",
-    "email": "admin@servalldev.com",
-    "url": "https://www.servalldev.com"
+    "name": "Launchcode",
+    "email": "admin@lc.dev",
+    "url": "https://lc.dev"
   },
   "scripts": {
     "build": "tsc -b",
@@ -20,28 +20,30 @@
   },
   "devDependencies": {
     "@commitlint/cli": "8",
-    "@servall/commitlint": "1",
-    "@servall/dev": "0.0.10-beta.13",
-    "@servall/eslint-config": "0.1",
-    "@servall/jest": "0.1",
-    "@servall/prettier": "0.1",
-    "@servall/ts": "0.1",
-    "@servall/tsconfig": "0.1",
+    "@lcdev/commitlint": "1",
+    "@lcdev/eslint-config": "0.2",
+    "@lcdev/jest": "0.1",
+    "@lcdev/prettier": "0.1",
+    "@lcdev/ts": "0.2",
+    "@lcdev/tsconfig": "0.1",
+    "@servall/dev": "0.0.17",
     "@types/jest": "24",
     "@types/moment": "2",
     "@types/node": "8",
     "benchmark": "2",
+    "eslint": "6",
     "husky": "3",
     "jest": "24",
     "moment": "2",
+    "prettier": "1",
     "typescript": "3"
   },
-  "prettier": "@servall/prettier",
+  "prettier": "@lcdev/prettier",
   "eslintConfig": {
-    "extends": "@servall"
+    "extends": "@lcdev"
   },
   "jest": {
-    "preset": "@servall/jest"
+    "preset": "@lcdev/jest"
   },
   "husky": {
     "hooks": {
@@ -50,7 +52,7 @@
   },
   "commitlint": {
     "extends": [
-      "@servall/commitlint"
+      "@lcdev/commitlint"
     ]
   }
 }

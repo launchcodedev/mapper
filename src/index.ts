@@ -173,7 +173,7 @@ const getProperty = (obj: any, accessor: string[]) =>
       return obj[property];
     }
 
-    throw new Error(`@servall/mapper could not access property '${accessor.join('.')}'`);
+    throw new Error(`@lcdev/mapper could not access property '${accessor.join('.')}'`);
   }, obj);
 
 const setProperty = (obj: any, accessor: string[], value: any, createObjs = false) => {

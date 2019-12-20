@@ -2,7 +2,7 @@
 Simple object mapping with visitor support. Does the difficult JS data type parsing.
 
 ```typescript
-import { mapper, Mapping } from '@servall/mapper';
+import { mapper, Mapping } from '@lcdev/mapper';
 
 const mapping: Mapping = {
   custom: [
@@ -112,7 +112,7 @@ for nesting objects well, and with multiple branches in an action, requires dupl
 You might opt to use `extract` to take what you want:
 
 ```typescript
-import { extract } from '@servall/mapper';
+import { extract } from '@lcdev/mapper';
 
 const users = await myDatabase.select('* from user');
 
