@@ -120,7 +120,9 @@ export const mapper = <D>(
 
       if ((data as any).constructor.name !== 'Object') {
         console.warn(
-          `Iterating over a ${(data as any).constructor.name}, which will lose your class instance type`,
+          `Iterating over a ${
+            (data as any).constructor.name
+          }, which will lose your class instance type`,
         );
       }
 
