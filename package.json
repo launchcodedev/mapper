@@ -1,7 +1,7 @@
 {
   "name": "@lcdev/mapper",
   "description": "Simple object mapping with visitor support",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "license": "UNLICENSED",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
