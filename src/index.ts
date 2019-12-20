@@ -256,11 +256,10 @@ export type StructuredMappingOptions<I, O = I> =
 
 export type StructuredMapping<I = any, O = I> =
   | [
-
-        | boolean
-        // using O[0] to extract the type of array elements that it maps to
-        | StructuredMappingFunc<I, O extends any[] ? O[0] : never>
-        | StructuredMappingStructure<I, O extends any[] ? O[0] : never>,
+      | boolean
+      // using O[0] to extract the type of array elements that it maps to
+      | StructuredMappingFunc<I, O extends any[] ? O[0] : never>
+      | StructuredMappingStructure<I, O extends any[] ? O[0] : never>,
     ]
   | StructuredMappingOptions<I, O>;
 
@@ -306,9 +305,7 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
         throw new Error('received an array mapping, but input data was not');
       }
 
-      return (((data as unknown) as any[]).map(v =>
-        (mapping.map as StructuredMappingFunc<D, O>)(v, toDataType(v)),
-      ) as unknown) as O;
+      return (((data as unknown) as any[]).map(v => mapping.map(v, toDataType(v))) as unknown) as O;
     }
 
     return (mapping.map as StructuredMappingFunc<D, O>)(data, toDataType(data));
@@ -353,7 +350,10 @@ export const structuredMapper = <D, O = D>(data: D, mapping: StructuredMapping<D
 
       try {
         // when getting the property, we ignore 'flatten'
-        input = getProperty(data, prop.filter((p: string) => p !== 'flatten'));
+        input = getProperty(
+          data,
+          prop.filter((p: string) => p !== 'flatten'),
+        );
       } catch (err) {
         if (!mapping.optional) {
           throw err;
@@ -429,7 +429,7 @@ export const extract = (body: any, extraction: Extraction): any => {
     if (Array.isArray(extractField)) {
       // this is when mapping is [{ bar: true }]
       // [{bar:1,baz:2},{bar:2,baz:3}] -> [{bar:1},{bar:2}]
-      const isObjectMapping = (extractField as any[]).some(v => typeof v !== 'string');
+      const isObjectMapping = extractField.some(v => typeof v !== 'string');
 
       if (isObjectMapping) {
         if (extractField.length !== 1) {

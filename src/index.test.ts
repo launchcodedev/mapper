@@ -144,7 +144,12 @@ describe('mapper', () => {
   });
 
   test('array mapping', () => {
-    const objs: [any, any][] = [[[0, 1, 2, 3], [0, 2, 4, 6]]];
+    const objs: [any, any][] = [
+      [
+        [0, 1, 2, 3],
+        [0, 2, 4, 6],
+      ],
+    ];
 
     const mapping: Mapping = {
       [DataType.Number]: num => num * 2,
@@ -187,7 +192,10 @@ describe('mapper', () => {
       [{}, {}],
       [1, 2],
       [{ foo: 2 }, { foo: 2 }],
-      [{ foo: 1, bar: 1 }, { foo: 1, bar: 2 }],
+      [
+        { foo: 1, bar: 1 },
+        { foo: 1, bar: 2 },
+      ],
       [{ bar: { baz: 1, bat: 1 } }, { bar: { baz: 8, bat: 2 } }],
     ];
 
