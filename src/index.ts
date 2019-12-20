@@ -394,11 +394,11 @@ export type Extraction =
       [key: string]: Extraction;
     };
 
-class Rename {
+export class Rename {
   constructor(public readonly to: string) {}
 }
 
-class Transform {
+export class Transform {
   constructor(public readonly fn: (from: any) => any) {}
 }
 
