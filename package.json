@@ -2,7 +2,7 @@
   "name": "@lcdev/mapper",
   "description": "Simple object mapping with visitor support",
   "version": "0.1.19",
-  "license": "UNLICENSED",
+  "license": "MPL-2.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": {
@@ -13,8 +13,8 @@
   "scripts": {
     "build": "tsc -b",
     "clean": "rm -rf dist *.tsbuildinfo",
-    "lint": "dev lint",
-    "fix": "dev lint --fix",
+    "lint": "eslint --ext .ts,.tsx src",
+    "fix": "eslint --ext .ts,.tsx src --fix",
     "test": "jest",
     "prepublishOnly": "yarn clean && yarn build"
   },
@@ -26,7 +26,6 @@
     "@lcdev/prettier": "0.1",
     "@lcdev/ts": "0.2",
     "@lcdev/tsconfig": "0.1",
-    "@servall/dev": "0.0.17",
     "@types/jest": "24",
     "@types/moment": "2",
     "@types/node": "8",

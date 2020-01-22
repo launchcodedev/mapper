@@ -2,11 +2,8 @@
 Simple object mapping with visitor support. Does the difficult JS data type parsing.
 
 ### Quick Start
-[![](https://shields.servallapps.com/npm/v/@lcdev/mapper.svg?registry_uri=https%3A%2F%2Fnpm.servalldatasystems.com)](https://npm.servalldatasystems.com/#/detail/@lcdev/mapper)
-
 ```bash
-# replace VERSION below with the most recent major version above (eg. 0.5.1 -> 0.5, 1.2.3 -> 1)
-yarn add @lcdev/mapper@VERSION
+yarn add @lcdev/mapper@0.1
 ```
 
 ```typescript
