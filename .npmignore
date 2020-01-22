@@ -1,7 +1,19 @@
+# please upstream changes!
+# https://gitlab.servalldatasystems.com/meat-n-potatoes/dotfiles
+
 src/
-coverage/
-.editorconfig
+yarn.lock
+
 tsconfig.json
-tslint.json
-yarn-error.log
+*.tsbuildinfo
+.editorconfig
+.app-config.*
+app-config.*
+
 .DS_Store
+coverage/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
