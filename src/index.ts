@@ -415,6 +415,21 @@ export const extract = (body: any, extraction: Extraction): any => {
   const isArrMap =
     Array.isArray(extraction) && extraction.length === 1 && typeof extraction[0] === 'object';
 
+  if (!isArrMap && Array.isArray(extraction)) {
+    if (extraction.length > 1) {
+      throw new Error('It is invalid to pass an array with length > 1 as a property of extract');
+    }
+
+    // foo: [] or foo: [false] is equivalent to false
+    if (extraction.length === 0 || extraction[0] === false) {
+      extraction = false;
+    }
+  }
+
+  if (extraction === false || extraction === null || extraction === undefined) {
+    return undefined;
+  }
+
   if (Array.isArray(body)) {
     if (isArrMap) {
       return body.map(v => extract(v, (extraction as any[])[0]));

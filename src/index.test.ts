@@ -896,6 +896,12 @@ describe('extract', () => {
     expect(extract([1, 2, 3], true)).toEqual([1, 2, 3]);
   });
 
+  test('false array', () => {
+    expect(extract([1, 2, 3], [true])).toEqual([1, 2, 3]);
+    expect(extract([1, 2, 3], [false])).toEqual(undefined);
+    expect(extract([1, 2, 3], false)).toEqual(undefined);
+  });
+
   test('shallow array', () => {
     expect(extract([{ a: 1, b: 2 }], [{ a: true }])).toEqual([{ a: 1 }]);
   });
