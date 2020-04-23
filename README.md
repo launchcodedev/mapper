@@ -1,175 +1,183 @@
 # Object Mapper
-Simple object mapping with visitor support. Does the difficult JS data type parsing.
+![Licensed under MPL 2.0](https://img.shields.io/badge/license-MPL_2.0-green.svg)
+[![Build Status](https://img.shields.io/github/workflow/status/servall/mapper/CI)](https://github.com/servall/mapper/actions)
+[![npm](https://img.shields.io/npm/v/@lcdev/mapper.svg)](https://www.npmjs.com/package/@lcdev/mapper)
+
+Our internal utility package for describing object transformations in javascript.
+This package contains a few functions for extraction, property mapping and a few
+other types of transforms.
+
+At the moment, the functions that this package exports have typescript types, but
+are not fully type safe. That is, we can't infer types correctly, so it's your
+responsibility to cast as required.
 
 ### Quick Start
 ```bash
 yarn add @lcdev/mapper@0.1
 ```
 
+There are three main functions:
+
+1. The `extract` function: decides which fields of an object to keep, stripping others out.
+2. The `structuredMapper` function: transforms fields of an object, based on the key name of of that field.
+3. The `mapper` function: operates on all fields of an object, discriminating based on the type of values.
+
+# The `extract` Function
+Extraction is the simplest but most practical function. It take any javascript object in, and outputs a
+new object with only the fields you want.
+
 ```typescript
-import { mapper, Mapping } from '@lcdev/mapper';
+import { extract } from '@lcdev/mapper';
+
+const user = await myDatabase.select('* from user where id = 1');
+
+const userWithSpecificFields = extract(user, {
+  firstname: true,
+  lastname: true,
+  permissions: [{
+    role: true,
+    authority: ['access'],
+  }],
+});
+```
+
+For this example, we'll pretend that `user` comes back as a nested object from an ORM.
+
+```typescript
+const user = {
+  firstname: 'John',
+  lastname: 'Doe',
+  password: '$hashed',
+  socialSecurityNumber: '111222333',
+  permissions: [
+    {
+      role: 'admin',
+      authority: { access: 'read-write', id: 42 },
+      privateInfo: 'secret!',
+    },
+  ],
+};
+
+const userWithSpecificFields = extract(user, {
+  firstname: true,
+  lastname: true,
+  permissions: [{
+    role: true,
+    authority: ['access'],
+  }],
+});
+```
+
+Given this, our `extract` function looks at the declarative object passed as a second argument,
+and decides which fields to keep and which to ignore.
+
+Our output looks like:
+
+```json
+{
+  firstname: 'John',
+  lastname: 'Doe',
+  permissions: [
+    { role: 'admin', authority: { access: 'read-write' } },
+  ],
+}
+```
+
+Notice how `password`, `privateInfo`, `id` and others were disgarded. This can be quite helpful for ensuring
+that your API responses come back as you expect them to, especially when using an ORM where you don't want to
+be manually selecting columns for every route.
+
+#### Patterns
+Here are the patterns that `extract` supports:
+
+- `['foo']` means "pull these fields from the object" - it's the same as `{ foo: true }`
+- `[{ ... }]` means "map arrays, taking these fields"
+- `{ foo: true }` means "take only 'foo' from the object"
+
+Mismatching types, like an array selector when the return is an object, are ignored.
+
+# The `structuredMapper` Function
+This function transforms a given javascript object into another, by transforming each field, by name.
+
+```typescript
+import { structuredMapper } from '@lcdev/mapper';
+
+const rawJsonResponse = await fetch('/foo/bar').then(v => v.json());
+
+// similar to extract, we give it data as the first argument, and how to map it in the second argument
+const response = structuredMapper(rawJsonResponse, {
+  firstname: true,
+  lastname: true,
+  birthdate(value, dataType) {
+    return new Date(value);
+  },
+  eyeColor: {
+    optional: true,
+    map(value, dataTpe) {
+      return value;
+    },
+  },
+});
+```
+
+The rules are pretty simple:
+- `true` means keep the value around
+- a named function means to pass the original value (and inferred DataType) to the function, and use the return value in the output
+- an object with a `map` function is like a named function, but allows `optional` and `nullable` meta properties
+- specifying `array: true` implies to map each element in an array, instead of assuming a single value
+- `fallback` is the value to use when an optional value isn't present in the input object
+- `rename` renames a field in the output object
+- `flatten` moves the field "up" in the object
+- `additionalProperties` passes through any fields that were on the input, but not specified in the mapping
+
+You may find looking at our test suite for `structuredMapper` helpful, since these concepts in isolation don't tend to look practical.
+
+# The `mapper` Function
+Similar to `structuredMapper`, the plain `mapper` function is a little more heavy-handed. It transforms all values, deeply nested.
+
+```typescript
+import { mapper, Mapping, DataType } from '@lcdev/mapper';
+import { isValid, parseISO } from 'date-fns';
 
 const mapping: Mapping = {
   custom: [
     [
       (data, dataType) => {
         if (dataType === DataType.String) {
-          return moment(data, moment.ISO_8601).isValid();
+          return isValid(parseISO(data));
         }
 
-        return dataType === DataType.Date || moment.isMoment(data);
+        return dataType === DataType.Date;
       },
-      data => moment(data),
+      (data, dataType) => (dataType === DataType.Date) ? data : parseISO(data),
     ],
   ],
 };
 
-expect(moment('1995-12-17T03:24:00').isSame(mapper(new Date('1995-12-17T03:24:00'), mapping)));
-expect(moment('1995-12-17T03:24:00').isSame(mapper(moment('1995-12-17T03:24:00'), mapping)));
-expect(moment('1995-12-17T03:24:00').isSame(mapper('1995-12-17T03:24:00', mapping)));
-expect(mapper('plain string', mapping)).toBe('plain string');
+const parseAllDates = (object) => mapper(object, mapping);
 ```
 
 This package will iterate through arrays, objects, etc. So doing an operation to all nested
 properties of an object is easy.
 
-Be warned: Object detection is `typeof val === 'object'`. Any Object match (those in
-`DataType` excluded) will iterate through the key/value pairs found (e.g. an XMLHttpRequest
-object) and modify the properties if it matches. This may produce undesirable results.
+Our `parseAllDates` function deeply introspects the input object, and will transform any
+fields that look like a date.
+
+Notice that we used `custom` above. Let's look at the 'normal' case.
 
 ```typescript
 const mapping: Mapping = {
   [DataType.Number]: num => num * 2,
+  [DataType.String]: str => {
+    const parsed = parseISO(str);
+    return isValid(parsed) ? parsed : str;
+  },
 };
-
-const mapped = mapper({ nested: { property: 2 }, arr: [12] }, mapping);
-
-expect(mapped).toEqual({ nested: { property: 4 }, arr: [24] });
 ```
 
-We also have a `structuredMapper` for more complex use cases. For example:
+The more typical use of `mapper` differentiates based on `DataType`.
 
-```typescript
-const mapUser = (user) => structuredMapper({
-  info: {
-    birthday(str) {
-      return moment(str);
-    },
-
-    firstName(str) {
-      return str.trim();
-    },
-  },
-
-  id: {
-    optional: true,
-    map: (val) => parseInt(val),
-  },
-
-  friends: {
-    array: true,
-    optional: true, // :(
-    map(value, dataType) {
-      if (dataType === DataType.String) {
-        return { name: value };
-      }
-
-      return value;
-    },
-  },
-});
-
-const users = structuredMapper(await fetch('/users'), {
-  success: val => (val !== true) ? throw 'Error!' : undefined,
-  allUsers: {
-    array: true,
-    map: mapUser,
-  },
-});
-```
-
-## Extraction
-Taking an example route action:
-
-```typescript
-{
-  path: '/users',
-  method: HttpMethod.GET,
-  async action(ctx, next) {
-    return myDatabase.select('* from user');
-  },
-},
-```
-
-You might prefer not to include the `password` field here (excuse the contrived example).
-
-To do so, the manual approach is:
-
-```typescript
-const { values, to, return } = { ... };
-
-return { values, to, return };
-```
-
-This is clearly not great. Lots of duplication and possibility for errors. It doesn't work
-for nesting objects well, and with multiple branches in an action, requires duplication.
-
-You might opt to use `extract` to take what you want:
-
-```typescript
-import { extract } from '@lcdev/mapper';
-
-const users = await myDatabase.select('* from user');
-
-return extract(users, {
-  firstName: true,
-  lastName: true,
-  permissions: [{
-    role: true,
-    authority: ['access'],
-  }],
-});
-```
-
-Some examples of this:
-
-```
-INPUT:
-{
-  firstName: 'Bob',
-  lastName: 'Albert',
-  password: 'secure!',
-  permissions: [
-    { role: 'admin', timestamp: new Date(), authority: { access: 33 } },
-    { role: 'user', timestamp: new Date(), extra: false },
-  ],
-}
-
-RETURNING:
-{
-  firstName: true,
-  lastName: true,
-  permissions: [{
-    role: true,
-    authority: ['access'],
-  }],
-}
-
-RESULT:
-{
-  firstName: 'Bob',
-  lastName: 'Albert',
-  permissions: [
-    { role: 'admin', authority: { access: 33 } },
-    { role: 'user' },
-  ],
-}
-```
-
-Note a couple things:
-
-- `['access']` means "pull these fields from the object" - it's the same as `{ access: true }`
-- `[{ ... }]` means "map this array with this selector"
-- `{ foo: true }` means "take only 'foo'"
-
-Mismatching types, like an array selector when the return is an object, are ignored.
+## Alternatives
+- [class-transformer](https://github.com/typestack/class-transformer)
+- [ts-object-transformer](https://github.com/fcamblor/ts-object-transformer)
+- [ramda evolve](https://ramdajs.com/docs/#evolve)
