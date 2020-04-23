@@ -1,6 +1,6 @@
 # Object Mapper
 ![Licensed under MPL 2.0](https://img.shields.io/badge/license-MPL_2.0-green.svg)
-[![Build Status](https://img.shields.io/github/workflow/status/servall/mapper/CI)](https://github.com/servall/mapper/actions)
+[![Build Status](https://github.com/servall/mapper/workflows/CI/badge.svg)](https://github.com/servall/mapper/actions)
 [![npm](https://img.shields.io/npm/v/@lcdev/mapper.svg)](https://www.npmjs.com/package/@lcdev/mapper)
 
 Our internal utility package for describing object transformations in javascript.
