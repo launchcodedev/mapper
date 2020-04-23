@@ -73,14 +73,14 @@ and decides which fields to keep and which to ignore.
 
 Our output looks like:
 
-```json
-{
+```typescript
+const userWithSpecificFields = {
   firstname: 'John',
   lastname: 'Doe',
   permissions: [
     { role: 'admin', authority: { access: 'read-write' } },
   ],
-}
+};
 ```
 
 Notice how `password`, `privateInfo`, `id` and others were disgarded. This can be quite helpful for ensuring
