@@ -2,7 +2,7 @@
 [![Licensed under MPL 2.0](https://img.shields.io/badge/license-MPL_2.0-green.svg)](https://www.mozilla.org/en-US/MPL/2.0/)
 [![Build Status](https://github.com/servall/mapper/workflows/CI/badge.svg)](https://github.com/servall/mapper/actions)
 [![npm](https://img.shields.io/npm/v/@lcdev/mapper.svg)](https://www.npmjs.com/package/@lcdev/mapper)
-[![BundlePhobia](https://badgen.net/bundlephobia/minzip/@lcdev/mapper)](https://bundlephobia.com/result?p=@lcdev/mapper)
+[![BundlePhobia](https://badgen.net/bundlephobia/minzip/@lcdev/mapper)](https://bundlephobia.com/result?p=@lcdev/mapper@latest)
 
 Our internal utility package for describing object transformations in javascript.
 This package contains a few functions for extraction, property mapping and a few
