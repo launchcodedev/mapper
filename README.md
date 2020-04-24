@@ -10,7 +10,8 @@ other types of transforms.
 
 At the moment, the functions that this package exports have typescript types, but
 are not fully type safe. That is, we can't infer types correctly, so it's your
-responsibility to cast as required.
+responsibility to cast as required. We think it may be possible to do in the future,
+and won't go 1.0 without at least knowing for sure.
 
 ### Quick Start
 ```bash
