@@ -46,7 +46,10 @@
   },
   "prettier": "@lcdev/prettier",
   "eslintConfig": {
-    "extends": "@lcdev"
+    "extends": "@lcdev",
+    "parserOptions": {
+      "project": "./tsconfig.eslint.json"
+    }
   },
   "jest": {
     "preset": "@lcdev/jest"
