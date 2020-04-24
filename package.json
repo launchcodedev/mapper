@@ -1,7 +1,7 @@
 {
   "name": "@lcdev/mapper",
   "description": "Simple object mapping with visitor support",
-  "version": "0.1.23",
+  "version": "0.1.24",
   "license": "MPL-2.0",
   "main": "dist/index.js",
   "module": "dist/es/index.js",
@@ -13,8 +13,8 @@
     "url": "https://lc.dev"
   },
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/servall/mapper.git"
+    "type": "git",
+    "url": "https://github.com/servall/mapper.git"
   },
   "scripts": {
     "build": "tsc -b",
