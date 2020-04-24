@@ -57,15 +57,6 @@ const user = {
     },
   ],
 };
-
-const userWithSpecificFields = extract(user, {
-  firstname: true,
-  lastname: true,
-  permissions: [{
-    role: true,
-    authority: ['access'],
-  }],
-});
 ```
 
 Given this, our `extract` function looks at the declarative object passed as a second argument,
