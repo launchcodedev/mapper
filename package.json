@@ -8,7 +8,8 @@
   "types": "dist/index.d.ts",
   "files": [
     "/dist",
-    "!*.tsbuildinfo"
+    "!*.tsbuildinfo",
+    "!*.test.*"
   ],
   "sideEffects": false,
   "author": {
@@ -50,10 +51,7 @@
   },
   "prettier": "@lcdev/prettier",
   "eslintConfig": {
-    "extends": "@lcdev",
-    "parserOptions": {
-      "project": "./tsconfig.eslint.json"
-    }
+    "extends": "@lcdev"
   },
   "jest": {
     "preset": "@lcdev/jest"
