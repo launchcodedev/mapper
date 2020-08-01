@@ -479,9 +479,19 @@ export const extract = (body: any, extraction: Extraction): any => {
       output[field] = body[field];
     } else if (extractField === false) {
       continue;
-    } else if (extractField instanceof Rename) {
+    } else if (
+      // we check 'name' instead of checking instanceof Rename to deal with multiple versions of mapper
+      typeof extractField === 'object' &&
+      'constructor' in extractField &&
+      extractField?.constructor?.name === 'Rename'
+    ) {
       output[extractField.to] = body[field];
-    } else if (extractField instanceof Transform) {
+    } else if (
+      // we check 'name' instead of checking instanceof Transform to deal with multiple versions of mapper
+      typeof extractField === 'object' &&
+      'constructor' in extractField &&
+      extractField?.constructor?.name === 'Transform'
+    ) {
       output[field] = extractField.fn(body[field]);
     } else {
       // { foo: { bar: ... } } - recurse into foo
