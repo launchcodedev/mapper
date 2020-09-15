@@ -34,4 +34,4 @@ sync-github-repo:
   stage: publish
   only: [master]
   variables:
-    GITHUB_SSH_URL: git@github.com:servall/mapper.git
+    GITHUB_SSH_URL: git@github.com:launchcodedev/mapper.git
